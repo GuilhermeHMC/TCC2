@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoFarm - Sistema de Automação de Cultivo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <style>
+        /* Estilos CSS com ajustes finais de layout */
+        body { font-family: 'Inter', sans-serif; margin: 0; display: flex; min-height: 100vh; transition: background-color 0.5s ease, color 0.5s ease; }
+        .wrapper { display: flex; width: 100%; }
+        .sidebar { width: 250px; transition: background-color 0.5s ease, color 0.5s ease; display: flex; flex-direction: column; padding: 20px 0; box-shadow: 2px 0 5px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; }
+        .logo { text-align: center; margin-bottom: 30px; font-size: 1.8rem; font-weight: 700; }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-item { cursor: pointer; transition: background-color 0.3s ease; }
+        .nav-link { text-decoration: none; display: flex; align-items: center; padding: 15px 20px; transition: background-color 0.3s ease, color 0.3s ease; }
+        .nav-link:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .nav-link.active { font-weight: bold; background-color: rgba(0, 0, 0, 0.1); }
+        .nav-link i { margin-right: 15px; font-size: 1.2rem; width: 20px; text-align: center; }
+        .version { font-size: 0.7rem; color: #aaa; position: absolute; bottom: 10px; left: 20px; cursor: pointer; transition: color 0.3s ease; }
+        .version:hover { opacity: 0.8; }
+        .main-content { flex-grow: 1; padding: 30px; transition: background-color 0.5s ease, color 0.5s ease; overflow-y: auto; }
+        #page-title { margin-top: 0; margin-bottom: 30px; font-weight: 700; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+        body.light-mode { background-color: #f4f7f6; color: #333; }
+        .sidebar.light-mode { background-color: #2c3e50; color: #ecf0f1; }
+        .sidebar.light-mode .nav-link { color: #ecf0f1; }
+        .sidebar.light-mode .nav-link.active { color: #4CAF50; background-color: rgba(0, 0, 0, 0.2); }
+        .sidebar.light-mode .nav-link:hover { background-color: rgba(255, 255, 255, 0.1); color: #fff; }
+        .sidebar.light-mode .version { color: #bdc3c7; }
+        .main-content.light-mode { background-color: #f4f7f6; color: #333; }
+        .main-content.light-mode #page-title { border-bottom-color: #e0e0e0; }
+        body.dark-mode { background-color: #2a2a2a; color: #eee; }
+        .sidebar.dark-mode { background-color: #1e1e1e; color: #ccc; }
+        .sidebar.dark-mode .nav-link { color: #ccc; }
+        .sidebar.dark-mode .nav-link.active { color: #5cb85c; background-color: rgba(255, 255, 255, 0.1); }
+        .sidebar.dark-mode .nav-link:hover { background-color: rgba(255, 255, 255, 0.15); color: #fff; }
+        .sidebar.dark-mode .version { color: #777; }
+        .main-content.dark-mode { background-color: #2a2a2a; color: #eee; }
+        .main-content.dark-mode #page-title { border-bottom-color: #444; }
+
+        /* Grid Layouts */
+        .dashboard-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .unit-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+
+        /* Estilo Base para Cards */
+        .dashboard-box, .unit-card, .edit-unit-box, .device-list-box, .device-description-box, .popup-content { border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; border: 1px solid transparent; display: flex; flex-direction: column;}
+        .dashboard-box:hover, .unit-card:hover { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); transform: translateY(-2px); }
+        .dashboard-box h3, .unit-card h3, .device-list-box h3 { margin-top: 0; margin-bottom: 15px; font-weight: 600; border-bottom: 1px solid; padding-bottom: 10px; }
+        .card-content { flex-grow: 1; display: flex; flex-direction: column; }
+        .unit-card { /* Altura automática */ }
+        .dashboard-box { cursor: pointer; }
+
+        /* Estilo dados Dashboard */
+        .dashboard-data { font-size: 0.9rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .dashboard-data i { width: 16px; text-align: center; opacity: 0.7; flex-shrink: 0;}
+        .dashboard-data strong { min-width: 80px; flex-shrink: 0;}
+        .dashboard-data span { margin-left: auto; padding-left: 5px; text-align: right; font-weight: bold; /* Destaca valor */}
+        /* Efeito de piscar para dados atualizados (opcional) */
+        .value-updated { animation: flash 0.7s ease-out; }
+        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+
+        /* Estilo dados Página Unidades */
+        .unit-details { font-size: 0.95rem; margin-bottom: 10px; display: flex; align-items: center; flex-wrap: nowrap; gap: 8px; }
+        .unit-details i { width: 16px; text-align: center; opacity: 0.8; flex-shrink: 0; }
+        .unit-details strong { min-width: 90px; display: inline-block; margin-right: 5px; flex-shrink: 0; }
+        .unit-details span { margin-left: auto; padding-left: 5px; text-align: right; font-weight: bold; /* Destaca valor */}
+
+        /* Seção de Controles (Página Unidades) */
+        .unit-controls-section { margin-top: 20px; padding-top: 15px; border-top: 1px solid; display: grid; grid-template-columns: auto 1fr auto; gap: 12px 15px; align-items: center; }
+        .control-label { grid-column: 1; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; text-align: left; font-weight: bold; }
+        .control-label i { width: 16px; text-align: center; opacity: 0.8; }
+        .unit-controls-section .switch { grid-column: 3; justify-self: end; }
+
+        /* Estilos do Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; flex-shrink: 0;}
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #4CAF50; }
+        input:focus + .slider { box-shadow: 0 0 1px #4CAF50; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Botões de Ação (Página Unidades) */
+        .card-buttons { margin-top: auto; padding-top: 15px; border-top: 1px solid; display: flex; flex-direction: column; gap: 10px; }
+        .button-row { display: flex; gap: 10px; width: 100%; }
+        .card-buttons button { background-color: #5bc0de; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: background-color 0.3s ease; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; flex-grow: 0; flex-shrink: 1; flex-basis: auto; }
+        .card-buttons button:hover { background-color: #31b0d5; }
+        .card-buttons .full-width { flex-basis: 100%; flex-grow: 1; }
+        .card-buttons .half-width { flex-basis: calc(50% - 5px); flex-grow: 1; }
+        .card-buttons .edit-button { background-color: #f0ad4e; margin: 0 auto; min-width: 120px; flex-grow: 0; flex-basis: auto; }
+        .card-buttons .edit-button:hover { background-color: #ec971f; }
+        .card-buttons .camera-button { background-color: #777; }
+        .card-buttons .camera-button:hover { background-color: #555; }
+
+        /* --- Estilos de Temas --- */
+        .light-mode .dashboard-box, .light-mode .unit-card, .light-mode .edit-unit-box, .light-mode .unit-form, .light-mode .device-list-box, .light-mode .device-description-box, .light-mode .popup-content { background-color: #fff; color: #333; border-color: #e0e0e0; }
+        .light-mode .dashboard-box h3, .light-mode .unit-card h3, .light-mode .device-list-box h3 { border-bottom-color: #eee; }
+        .light-mode .unit-controls-section { border-top-color: #eee; }
+        .light-mode .card-buttons { border-top-color: #eee; }
+        .light-mode .form-input, .light-mode .form-select, .light-mode textarea { background-color: #fff; border: 1px solid #ccc; color: #333; }
+        .light-mode .form-input:focus, .light-mode .form-select:focus, .light-mode textarea:focus { border-color: #4CAF50; box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2); }
+        .light-mode .form-label { color: #555; }
+        .light-mode .device-list-box li { border-bottom: 1px solid #eee; }
+        .light-mode .device-list-box li:hover { background-color: #f9f9f9; }
+        .light-mode .device-list-box li.active { background-color: #e9f5e9; border-left-color: #4CAF50; }
+        .light-mode .popup-close { color: #888; }
+        .light-mode .popup-close:hover { color: #555; }
+        .light-mode hr { border: 0; height: 1px; background-color: #eee; }
+        .light-mode .setting-section-title { color: #444; }
+        .light-mode .setting-section:not(:last-child) { border-bottom-color: #eee; }
+        .light-mode .report-graph-placeholder, .light-mode .graph-container { background-color: #e9ecef; border-color: #dee2e6; color: #495057; } /* Gráficos */
+        .light-mode .alert-list li { border-bottom-color: #eee; }
+        .light-mode .alert-list li:hover { background-color: #f9f9f9;}
+        .light-mode .delete-alert-btn { color: #d9534f; }
+        .light-mode .delete-alert-btn:hover { color: #c9302c; }
+
+
+        .dark-mode .dashboard-box, .dark-mode .unit-card, .dark-mode .edit-unit-box, .dark-mode .unit-form, .dark-mode .device-list-box, .dark-mode .device-description-box, .dark-mode .popup-content { background-color: #3a3a3a; color: #eee; border-color: #555; }
+        .dark-mode .dashboard-box h3, .dark-mode .unit-card h3, .dark-mode .device-list-box h3 { border-bottom-color: #555; }
+        .dark-mode .unit-controls-section { border-top-color: #555; }
+        .dark-mode .card-buttons { border-top-color: #555; }
+        .dark-mode .form-input, .dark-mode .form-select, .dark-mode textarea { background-color: #555; border: 1px solid #777; color: #eee; }
+        .dark-mode .form-input:focus, .dark-mode .form-select:focus, .dark-mode textarea:focus { border-color: #5cb85c; box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.3); }
+        .dark-mode .form-label { color: #ccc; }
+        .dark-mode .device-list-box li { border-bottom: 1px solid #555; }
+        .dark-mode .device-list-box li:hover { background-color: #4f4f4f; }
+        .dark-mode .device-list-box li.active { background-color: #4a5c4a; border-left-color: #5cb85c; }
+        .dark-mode .popup-close { color: #aaa; }
+        .dark-mode .popup-close:hover { color: #ddd; }
+        .dark-mode hr { border: 0; height: 1px; background-color: #555; }
+        .dark-mode .setting-section-title { color: #ccc; }
+        .dark-mode .setting-section:not(:last-child) { border-bottom-color: #555; }
+        .dark-mode .report-graph-placeholder, .dark-mode .graph-container { background-color: #495057; border-color: #6c757d; color: #e9ecef; } /* Gráficos */
+        .dark-mode .alert-list li { border-bottom-color: #555; }
+        .dark-mode .alert-list li:hover { background-color: #4f4f4f;}
+        .dark-mode .delete-alert-btn { color: #e76f6b; }
+        .dark-mode .delete-alert-btn:hover { color: #d9534f; }
+
+        .dark-mode .slider { background-color: #555; }
+        .dark-mode .slider:before { background-color: #bbb; }
+        .dark-mode input:checked + .slider { background-color: #5cb85c; }
+        .dark-mode input:checked + .slider:before { background-color: #eee; }
+
+        /* Demais estilos (formulários, outras páginas, popups) */
+        .unit-form { display: flex; flex-direction: column; max-width: 600px; margin: 20px auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        .form-group { margin-bottom: 20px; width: 100%; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-input, .form-select, textarea { width: 100%; padding: 12px; border-radius: 5px; box-sizing: border-box; font-size: 1rem; }
+        textarea { min-height: 100px; resize: vertical; }
+        .submit-button { background-color: #4CAF50; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; width: auto; align-self: center; margin-top: 10px; font-size: 1rem; font-weight: 600; }
+        .submit-button:hover { background-color: #45a049; }
+        .cancel-button { background-color: #6c757d; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; width: auto; align-self: center; margin-top: 10px; font-size: 1rem; font-weight: 600; }
+        .cancel-button:hover { background-color: #5a6268; }
+        .delete-button { background-color: #d9534f; border-color: #d43f3a; color: white; }
+        .delete-button:hover { background-color: #c9302c; border-color: #ac2925;}
+        .actuators-page { max-width: 450px; margin: 20px auto; }
+        .actuators-page .control-item { padding: 20px; border: 1px solid; border-radius: 8px; margin-bottom: 25px; text-align: center; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .control-title { margin: 0 0 15px 0; font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .actuators-page .switch-container { display: flex; align-items: center; justify-content: center; margin-top: 10px; gap: 15px; }
+        .actuators-page .switch { flex-shrink: 0; }
+        .actuators-page .status { min-width: 60px; text-align: left; flex-shrink: 0; font-size: 0.9rem; font-style: italic;}
+        .sensors-page .sensor-data { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .sensors-page .sensor-item { padding: 20px; border: 1px solid; border-radius: 8px; text-align: center; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .sensor-label { display: block; font-weight: bold; margin-bottom: 10px; }
+        .sensor-value { font-size: 1.5rem; font-weight: 600; }
+        .settings-page .setting-section { margin-bottom: 20px; padding-bottom: 20px; }
+        .settings-page .setting-section:not(:last-child) { border-bottom: 1px solid; }
+        .settings-page .setting-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; }
+        .settings-page .setting-section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; }
+        .settings-page .setting-options { display: flex; flex-wrap: wrap; gap: 10px; }
+        .settings-page .setting-action-button, .settings-page .theme-options button { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; border: 1px solid transparent; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .settings-page #create-alert-button { background-color: #5bc0de; color: white; border-color: #46b8da;}
+        .settings-page #create-alert-button:hover { background-color: #31b0d5; border-color: #269abc;}
+        .settings-page #manage-alerts-button { background-color: #f0ad4e; color: white; border-color: #eea236;} /* Botão Gerenciar Alertas */
+        .settings-page #manage-alerts-button:hover { background-color: #ec971f; border-color: #d58512;}
+        .settings-page #alert-history-button { background-color: #6c757d; color: white; border-color: #6c757d;}
+        .settings-page #alert-history-button:hover { background-color: #5a6268; border-color: #545b62;}
+        .settings-page #view-graphs-button { background-color: #f0ad4e; color: white; border-color: #eea236;} /* Botão Gráficos */
+        .settings-page #view-graphs-button:hover { background-color: #ec971f; border-color: #d58512;}
+        .settings-page #settings-version-button { background-color: #777; color: white; border-color: #777;}
+        .settings-page #settings-version-button:hover { background-color: #555; border-color: #555;}
+        .settings-page .theme-options button.light-theme { background-color: #f9f9f9; color: #333; border-color: #ddd; }
+        .settings-page .theme-options button.dark-theme { background-color: #3a3a3a; color: #eee; border-color: #555; }
+        .settings-page .theme-options button.light-theme:hover { background-color: #eee; border-color: #ccc; }
+        .settings-page .theme-options button.dark-theme:hover { background-color: #555; border-color: #777; }
+
+        /* Estilos para Gerenciar Alertas */
+        .alert-list { list-style: none; padding: 0; margin-top: 15px; }
+        .alert-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid; }
+        .alert-list li:last-child { border-bottom: none; }
+        .alert-details { font-size: 0.9rem; }
+        .delete-alert-btn { background: none; border: none; color: #d9534f; cursor: pointer; font-size: 1.1rem; padding: 0 5px; }
+        .delete-alert-btn:hover { color: #c9302c; }
+
+        /* Estilos para Gráficos */
+        .graphs-page { display: flex; flex-direction: column; gap: 20px; }
+        .graph-controls { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        .graph-container { padding: 15px; border-radius: 8px; border: 1px dashed; min-height: 300px; }
+
+
+        .add-device-page {}
+        .add-device-layout { display: flex; gap: 30px; flex-wrap: wrap; }
+        .device-list-box { flex: 0 0 300px; max-height: 500px; overflow-y: auto; }
+        .device-list-box ul { list-style: none; padding: 0; margin: 0; }
+        .device-list-box li { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid; transition: background-color 0.2s ease, border-left-color 0.2s ease; border-left: 3px solid transparent; display: flex; align-items: center; gap: 10px; }
+        .device-list-box li:last-child { border-bottom: none; }
+        .device-list-box li i { width: 20px; text-align: center; opacity: 0.7; }
+        .device-list-box li.active { font-weight: bold; border-left-width: 3px; }
+        .device-description-box { flex-grow: 1; min-height: 300px; }
+        .device-description-box h4 { margin-top: 0; font-size: 1.1rem; font-weight: 600; }
+        .device-description-box p { line-height: 1.6; }
+        .device-description-box .placeholder { color: #888; font-style: italic; }
+        #version-popup, #camera-popup, #edit-unit-popup, #create-alert-popup, #graphs-popup { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.6); align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        #graphs-popup .popup-content { max-width: 90%; width: auto; max-height: 90vh; } /* Popup de gráfico maior */
+        .popup-content { margin: auto; padding: 20px 30px; position: relative; max-width: 450px; width: 100%; text-align: left; }
+        #create-alert-popup .popup-content { max-width: 600px; }
+        /* #report-popup removido, agora é #graphs-popup */
+        #edit-unit-popup .popup-content { max-width: 750px; }
+        #edit-unit-popup .popup-content h2, #create-alert-popup .popup-content h2, #graphs-popup .popup-content h2 { text-align: center; margin-top: 0; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid; }
+         .light-mode #edit-unit-popup .popup-content h2, .light-mode #create-alert-popup .popup-content h2, .light-mode #graphs-popup .popup-content h2 { border-bottom-color: #eee; }
+         .dark-mode #edit-unit-popup .popup-content h2, .dark-mode #create-alert-popup .popup-content h2, .dark-mode #graphs-popup .popup-content h2 { border-bottom-color: #555; }
+        #popup-logo { max-width: 150px; height: auto; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }
+         #edit-unit-popup .popup-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid; }
+         #edit-unit-popup .popup-buttons button { margin-top: 0; align-self: auto; flex-grow: 1; min-width: 120px; }
+         #create-alert-popup .popup-buttons { display: flex; justify-content: center; gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 1px solid; }
+         #create-alert-popup .popup-buttons button { margin-top: 0; align-self: auto; }
+        .popup-close { position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 1; background: none; border: none; padding: 0; transition: color 0.3s ease; }
+        .popup-close:hover, .popup-close:focus { text-decoration: none; }
+        .popup-content hr { border: 0; height: 1px; margin: 15px 0; }
+        #camera-popup .popup-content { text-align: center; max-width: 600px; }
+        #camera-popup .video-frame { width: 100%; max-width: 500px; height: 300px; background-color: #333; color: #eee; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; border-radius: 5px; margin: 0 auto 15px auto; }
+        #camera-popup .video-frame i { font-size: 4rem; margin-right: 10px; }
+        #edit-unit-popup #edit-unit-form { margin-top: 0; padding: 0; box-shadow: none; border-radius: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center; }
+        #edit-unit-popup #edit-unit-form .form-group { margin-bottom: 0; width: auto; display: contents; }
+         #edit-unit-popup #edit-unit-form .form-group > label { grid-column: 1; text-align: right; padding-right: 10px; margin-bottom: 0; }
+         #edit-unit-popup #edit-unit-form .form-group > input, #edit-unit-popup #edit-unit-form .form-group > select, #edit-unit-popup #edit-unit-form .form-group > textarea { grid-column: 2; width: 100%; margin-bottom: 0; }
+         #edit-unit-popup #edit-unit-form .sensor-options { grid-column: 1 / 3; }
+         #edit-unit-popup #edit-unit-form .sensor-options .form-label { text-align: left; margin-bottom: 10px; }
+         #edit-unit-popup #edit-unit-form .sensor-item-edit { display: flex; align-items: center; margin-bottom: 5px; padding-left: 10px; }
+        #edit-unit-popup .sensor-item-edit label { text-align: left; padding-right: 10px; margin-right: 10px; flex-grow: 1; }
+        #edit-unit-popup .sensor-item-edit input[type="number"] { width: 60px; padding: 5px 8px; border-radius: 5px; border: 1px solid #ccc; margin-left: 5px; font-size: 0.9rem; }
+        #edit-unit-popup .popup-buttons { grid-column: 1 / 3; }
+         /* Removido .report-graph-placeholder */
+
+        /* Media Queries Responsivas */
+        @media (max-width: 768px) {
+             body { flex-direction: column; }
+             .sidebar { width: 100%; max-height: 60px; overflow-y: hidden; flex-direction: row; justify-content: space-around; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 10px 0; position: fixed; bottom: 0; top: auto; z-index: 900; }
+             .sidebar .logo { display: none; }
+             .nav-list { display: flex; flex-direction: row; justify-content: space-around; align-items: center; width: 100%; flex-grow: 0; }
+             .nav-item { flex-grow: 1; text-align: center; }
+             .nav-link { flex-direction: column; padding: 5px; font-size: 0.75rem; line-height: 1.2; }
+             .nav-link i { margin-right: 0; margin-bottom: 3px; font-size: 1rem; width: auto; }
+             .version { display: none; }
+             .main-content { padding: 20px; margin-bottom: 70px; }
+             .dashboard-summary, .unit-list { grid-template-columns: 1fr; }
+             .unit-card, .dashboard-box { min-height: auto; }
+             .unit-controls-section { grid-template-columns: auto auto; gap: 10px 10px; }
+             .unit-controls-section .switch { justify-self: start; }
+
+             #edit-unit-popup .popup-content, #create-alert-popup .popup-content, #graphs-popup .popup-content { max-width: 95%; max-height: 85vh; overflow-y: auto; padding: 15px; }
+             #graphs-popup .popup-content { max-height: 80vh; } /* Ajuste altura popup gráfico */
+             #edit-unit-popup #edit-unit-form { grid-template-columns: 1fr; gap: 5px; padding: 10px 0; }
+             #edit-unit-popup #edit-unit-form .form-group > label { grid-column: 1; text-align: left; padding-right: 0; }
+             #edit-unit-popup #edit-unit-form .form-group > input, #edit-unit-popup #edit-unit-form .form-group > select, #edit-unit-popup #edit-unit-form .form-group > textarea { grid-column: 1; }
+             #edit-unit-popup #edit-unit-form .sensor-options, #edit-unit-popup .popup-buttons { grid-column: 1; }
+             #edit-unit-popup .popup-buttons { flex-direction: column; gap: 10px; align-items: stretch; }
+             #edit-unit-popup .popup-buttons button { width: 100%; }
+             #create-alert-popup .popup-buttons { flex-direction: column; gap: 10px; align-items: stretch; }
+             #create-alert-popup .popup-buttons button { width: 100%; }
+             .add-device-layout { flex-direction: column; }
+             .device-list-box { flex: 0 0 auto; max-height: 250px; }
+             .graph-controls { flex-direction: column; gap: 10px; } /* Controles do gráfico empilhados */
+             .graph-controls .form-select { width: 100%; }
+        }
+    </style>
+</head>
+
+<body class="">
+    <div class="wrapper">
+        <div class="sidebar">
+            <h2 class="logo"> <span style="color: white;">Auto</span><span style="color: #4CAF50;">Farm</span> </h2>
+            <ul class="nav-list">
+                <li class="nav-item"> <a href="#" class="nav-link" data-page="dashboard"><i class="fas fa-home"></i> Dashboard</a> </li>
+                <li class="nav-item"> <a href="#" class="nav-link" data-page="units"><i class="fas fa-seedling"></i> Unidades de Cultivo</a> </li>
+                <li class="nav-item"> <a href="#" class="nav-link" data-page="create-unit"><i class="fas fa-plus"></i> Criar Unidade</a> </li>
+                <li class="nav-item"> <a href="#" class="nav-link" data-page="add-device"><i class="fas fa-cogs"></i> Adicionar Dispositivo</a> </li>
+                <li class="nav-item"> <a href="#" class="nav-link" data-page="sensors"><i class="fas fa-tachometer-alt"></i> Sensores</a> </li>
+                <li class="nav-item"> <a href="#" class="nav-link" data-page="actuators"><i class="fas fa-toggle-on"></i> Atuadores</a> </li>
+                <li class="nav-item"> <a href="#" class="nav-link" data-page="settings"><i class="fas fa-cog"></i> Configurações</a> </li>
+            </ul>
+            <footer class="version" id="version-info">Versão 2.8</footer>
+        </div>
+
+        <div class="main-content">
+            <h2 id="page-title">Carregando...</h2>
+            <div id="content-container"> </div>
+        </div>
+    </div>
+
+    <div id="version-popup"> <div class="popup-content"> <button class="popup-close" id="popup-close-button">&times;</button> <h3>AutoFarm - Sistema de Automação para Cultivo</h3> <img src="AutoFarmLogo.jpg" alt="Logo AutoFarm" id="popup-logo"> <p><strong>Versão:</strong> <span id="popup-version-number">2.8</span></p> <hr> <p style="text-align: left; margin-bottom: 5px; font-size: 0.9rem;"> <strong>Desenvolvido por:</strong><br> Guilherme H. M. C.<br> Estudante de Engenharia de Software<br> Matrícula: 1514313-5 </p> <p style="text-align: left; margin-bottom: 5px; font-size: 0.9rem;"> <strong>Trabalho de Conclusão de Curso:</strong><br> Desenvolvimento de um Sistema de Automação para Cultivo de Hortaliças em Fazendas Verticais Urbanas<br> Orientadora: Professora Esp. Janaina Aparecida de Freitas </p> <hr> <p style="font-size: 0.85rem; margin-top: 10px; text-align: center;"> <small>UniCesumar - Maringá, PR<br>&copy; 2024-2025</small> </p> </div> </div>
+    <div id="camera-popup"> <div class="popup-content"> <button class="popup-close" id="camera-popup-close">&times;</button> <h3 id="camera-popup-title">Visualização da Câmera</h3> <div class="video-frame"> <i class="fas fa-video-slash"></i> Câmera Desativada </div> </div> </div>
+    <div id="edit-unit-popup"> <div class="popup-content"> <button class="popup-close" id="edit-unit-popup-close">&times;</button> <h2>Editar Unidade</h2> <form id="edit-unit-form"> <input type="hidden" id="edit-unit-id"> <div class="form-group"> <label for="edit-unit-name" class="form-label">Nome:</label> <input type="text" id="edit-unit-name" class="form-input" required> </div> <div class="form-group"> <label for="edit-unit-area" class="form-label">Área (m²):</label> <input type="text" id="edit-unit-area" class="form-input" required> </div> <div class="form-group"> <label for="edit-unit-type" class="form-label">Tipo Cultivo:</label> <select id="edit-unit-type" class="form-select"> <option value="Hidroponia">Hidroponia</option> <option value="Solo">Solo</option> </select> </div> <div class="form-group"> <label for="edit-lighting-level" class="form-label">Iluminação Ideal (%):</label> <input type="number" id="edit-lighting-level" class="form-input" placeholder="Ex: 80" required min="0" max="100"> </div> <div class="sensor-options"> <label class="form-label">Sensores Associados:</label> <div id="sensor-selection-container"> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-umidade" value="Umidade"> <label for="edit-sensor-umidade">Umidade</label> <input type="number" id="edit-quantidade-umidade" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-temperatura" value="Temperatura"> <label for="edit-sensor-temperatura">Temperatura</label> <input type="number" id="edit-quantidade-temperatura" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-iluminacao" value="Iluminação"> <label for="edit-sensor-iluminacao">Iluminação</label> <input type="number" id="edit-quantidade-iluminacao" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-co2" value="CO2"> <label for="edit-sensor-co2">CO₂</label> <input type="number" id="edit-quantidade-co2" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-ph" value="pH"> <label for="edit-sensor-ph">pH</label> <input type="number" id="edit-quantidade-ph" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> </div> </div> <div class="popup-buttons"> <button type="submit" class="submit-button" id="save-edit-button"> <i class="fas fa-save"></i> Salvar</button> <button type="button" class="cancel-button" id="cancel-edit-button"> <i class="fas fa-times"></i> Cancelar</button> <button type="button" class="delete-button" id="delete-unit-button"> <i class="fas fa-trash-alt"></i> Remover Unidade</button> </div> </form> </div> </div>
+    <div id="create-alert-popup"> <div class="popup-content"> <button class="popup-close" id="create-alert-popup-close">&times;</button> <h2>Criar Novo Alerta</h2> <form id="create-alert-form"> <div class="form-group"> <label for="alert-name" class="form-label">Nome do Alerta:</label> <input type="text" id="alert-name" class="form-input" placeholder="Ex: Nível Baixo pH Unidade 1" required> </div> <div class="form-group"> <label for="alert-device" class="form-label">Dispositivo/Sensor:</label> <select id="alert-device" class="form-select" required> <option value="">-- Selecione --</option> <option value="humidity_sensor">Sensor de Umidade</option> <option value="temperature_sensor">Sensor de Temperatura</option> <option value="lighting_sensor">Sensor de Iluminação</option> <option value="co2_sensor">Sensor de CO₂</option> <option value="ph_sensor">Sensor de pH</option> <option value="irrigation">Sistema de Irrigação</option> <option value="lighting">Sistema de Iluminação</option> <option value="ventilation">Sistema de Ventilação</option> </select> </div> <div class="form-group"> <label for="alert-limit" class="form-label">Condição/Limite:</label> <select id="alert-condition" class="form-select" style="margin-bottom: 10px;"> <option value=">">Maior que (>)</option> <option value="<">Menor que (<)</option> <option value="=">Igual a (=)</option> <option value="on">Ligar</option> <option value="off">Desligar</option> </select> <input type="number" id="alert-limit" class="form-input" placeholder="Valor (Ex: 25 ou 6.5)" required step="any"> <small style="display:block; margin-top: 5px;">Defina a condição e o valor (use ponto para decimais). Para Ligar/Desligar, o valor pode não ser necessário.</small> </div> <div class="form-group"> <label for="alert-action" class="form-label">Ação (Opcional):</label> <select id="alert-action-device" class="form-select" style="margin-bottom: 10px;"> <option value="">-- Nenhum (Apenas Notificar) --</option> <option value="irrigation">Sistema de Irrigação</option> <option value="lighting">Sistema de Iluminação</option> <option value="ventilation">Sistema de Ventilação</option> </select> <select id="alert-action-state" class="form-select"> <option value="on">Ligar</option> <option value="off">Desligar</option> </select> </div> <div class="popup-buttons"> <button type="submit" class="submit-button" id="save-alert-button">Salvar Alerta</button> <button type="button" class="cancel-button" id="cancel-alert-button">Cancelar</button> </div> </form> </div> </div>
+    <div id="graphs-popup">
+        <div class="popup-content">
+            <button class="popup-close" id="graphs-popup-close">&times;</button>
+            <h2>Visualizar Histórico (Gráficos)</h2>
+            <div class="graphs-page">
+                <div class="graph-controls">
+                    <div class="form-group" style="min-width: 200px;">
+                        <label for="graph-unit-select" class="form-label">Unidade:</label>
+                        <select id="graph-unit-select" class="form-select"></select>
+                    </div>
+                    <div class="form-group" style="min-width: 200px;">
+                        <label for="graph-sensor-select" class="form-label">Sensor:</label>
+                        <select id="graph-sensor-select" class="form-select">
+                            <option value="temperature">Temperatura</option>
+                            <option value="humidity">Umidade</option>
+                            <option value="lighting">Iluminação</option>
+                            <option value="co2">CO₂</option>
+                            <option value="ph">pH</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="graph-container">
+                    <canvas id="sensorHistoryChart"></canvas>
+                </div>
+            </div>
+         </div>
+    </div>
+
+    <script>
+        // --- Constantes e Variáveis Globais ---
+        const navLinks = document.querySelectorAll('.nav-link');
+        let contentContainer = document.getElementById('content-container');
+        const pageTitle = document.getElementById('page-title');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const bodyElement = document.body;
+        const DEFAULT_PAGE = 'dashboard';
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const POLLING_INTERVAL = 5000; // Intervalo para buscar dados atuais (ms)
+        let dataPollingIntervalId = null; // ID do intervalo de polling
+        let currentChart = null; // Referência para o gráfico Chart.js
+
+        // Popups
+        const versionInfoElement = document.getElementById('version-info');
+        const versionPopup = document.getElementById('version-popup');
+        const popupCloseButton = document.getElementById('popup-close-button');
+        const popupVersionNumberSpan = document.getElementById('popup-version-number');
+        const cameraPopup = document.getElementById('camera-popup');
+        const cameraPopupCloseButton = document.getElementById('camera-popup-close');
+        const cameraPopupTitle = document.getElementById('camera-popup-title');
+        const editUnitPopup = document.getElementById('edit-unit-popup');
+        const editUnitPopupCloseButton = document.getElementById('edit-unit-popup-close');
+        const editForm = document.getElementById('edit-unit-form');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
+        const sensorSelectionContainer = document.getElementById('sensor-selection-container');
+        const createAlertPopup = document.getElementById('create-alert-popup');
+        const createAlertPopupCloseButton = document.getElementById('create-alert-popup-close');
+        const createAlertForm = document.getElementById('create-alert-form');
+        const cancelAlertButton = document.getElementById('cancel-alert-button');
+        const graphsPopup = document.getElementById('graphs-popup'); // Novo popup de gráficos
+        const graphsPopupCloseButton = document.getElementById('graphs-popup-close');
+        const graphUnitSelect = document.getElementById('graph-unit-select');
+        const graphSensorSelect = document.getElementById('graph-sensor-select');
+        const graphCanvas = document.getElementById('sensorHistoryChart');
+
+
+        // --- Funções de Renderização de Página ---
+
+        // *** renderDashboard DINÂMICO e RESUMIDO (LIMPO) ***
+        async function renderDashboard() {
+            const title = 'Visão Geral das Unidades';
+            let htmlContent = '<p>Carregando resumo das unidades...</p>';
+            let unitsData = [];
+
+            try {
+                console.log(`Dashboard: Buscando unidades de ${API_BASE_URL}/units`);
+                const response = await fetch(`${API_BASE_URL}/units`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erro HTTP ao buscar unidades: ${response.status} - ${errorText}`);
+                }
+                // Usamos os dados iniciais aqui, o polling atualizará depois
+                unitsData = await response.json();
+                console.log('Dashboard: Unidades recebidas (inicial):', unitsData);
+
+                if (unitsData && unitsData.length > 0) {
+                    htmlContent = `
+                        <div class="dashboard-summary">
+                            ${unitsData.map(unit => `
+                                <div class="dashboard-box" data-unit-id="${unit.id}" title="Clique para ver detalhes da ${unit.name || 'Unidade'}">
+                                    <h3 class="unit-name">${unit.name || 'Nome Indefinido'}</h3>
+                                    <div class="card-content">
+                                        <p class="dashboard-data" data-sensor="humidity"><i class="fas fa-tint"></i><strong>Umidade:</strong> <span data-unit-id="${unit.id}" data-sensor="humidity">${unit.humidity ?? 'N/A'}%</span></p>
+                                        <p class="dashboard-data" data-sensor="temperature"><i class="fas fa-thermometer-half"></i><strong>Temperatura:</strong> <span data-unit-id="${unit.id}" data-sensor="temperature">${unit.temperature ?? 'N/A'}°C</span></p>
+                                        <p class="dashboard-data" data-sensor="lighting"><i class="fas fa-lightbulb"></i><strong>Iluminação:</strong> <span data-unit-id="${unit.id}" data-sensor="lighting">${unit.lighting ?? 'N/A'}%</span></p>
+                                        <p class="dashboard-data" data-sensor="co2"><i class="fas fa-smog"></i><strong>CO₂:</strong> <span data-unit-id="${unit.id}" data-sensor="co2">${unit.co2 ?? 'N/A'} ppm</span></p>
+                                        <p class="dashboard-data" data-sensor="ph"><i class="fas fa-flask"></i><strong>pH:</strong> <span data-unit-id="${unit.id}" data-sensor="ph">${unit.ph ?? 'N/A'}</span></p>
+                                    </div>
+                                </div>`).join('')}
+                        </div>`;
+                } else {
+                    htmlContent = '<p>Nenhuma unidade de cultivo encontrada para exibir no dashboard.</p>';
+                }
+            } catch (error) {
+                console.error("Erro ao carregar dashboard:", error);
+                htmlContent = `<p style="color: red;">Erro ao carregar o resumo das unidades: ${error.message}</p>`;
+            }
+            return { title, htmlContent };
+        }
+
+        // *** renderUnits REVISADO (Layout: Info -> Controles -> Botões) (LIMPO) ***
+        async function renderUnits() {
+            const title = 'Unidades de Cultivo';
+            let htmlContent = '<p>Carregando unidades...</p>';
+            let unitsData = [];
+
+            try {
+                console.log(`Unidades: Buscando unidades de ${API_BASE_URL}/units`);
+                const response = await fetch(`${API_BASE_URL}/units`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erro HTTP ao buscar unidades: ${response.status} - ${errorText}`);
+                }
+                // Usamos os dados iniciais aqui, o polling atualizará depois
+                unitsData = await response.json();
+                console.log('Unidades: Unidades recebidas (inicial):', unitsData);
+
+                if (unitsData && unitsData.length > 0) {
+                    htmlContent = `
+                        <div class="units-page">
+                            <div class="unit-list">
+                                ${unitsData.map(unit => `
+                                    <div class="unit-card" data-unit-id="${unit.id}"
+                                         data-name="${unit.name || ''}"
+                                         data-area="${(unit.area || '').replace(' m²', '')}"
+                                         data-type="${unit.type || 'Hidroponia'}"
+                                         data-lighting-ideal="${unit.lighting_level_ideal || ''}"
+                                         data-sensors='${JSON.stringify(unit.sensors || [])}'>
+
+                                        <h3 class="unit-name">${unit.name || 'Nome Indefinido'}</h3>
+                                        <div class="card-content">
+
+                                            <p class="unit-details" data-sensor="humidity"><i class="fas fa-tint"></i><strong>Umidade:</strong> <span data-unit-id="${unit.id}" data-sensor="humidity">${unit.humidity ?? 'N/A'}%</span></p>
+                                            <p class="unit-details" data-sensor="temperature"><i class="fas fa-thermometer-half"></i><strong>Temperatura:</strong> <span data-unit-id="${unit.id}" data-sensor="temperature">${unit.temperature ?? 'N/A'}°C</span></p>
+                                            <p class="unit-details" data-sensor="lighting"><i class="fas fa-lightbulb"></i><strong>Iluminação:</strong> <span data-unit-id="${unit.id}" data-sensor="lighting">${unit.lighting ?? 'N/A'}%</span></p>
+                                            <p class="unit-details" data-sensor="co2"><i class="fas fa-smog"></i><strong>CO₂:</strong> <span data-unit-id="${unit.id}" data-sensor="co2">${unit.co2 ?? 'N/A'} ppm</span></p>
+                                            <p class="unit-details" data-sensor="ph"><i class="fas fa-flask"></i><strong>pH:</strong> <span data-unit-id="${unit.id}" data-sensor="ph">${unit.ph ?? 'N/A'}</span></p>
+                                            <p class="unit-details"><i class="fas fa-ruler-combined"></i><strong>Área:</strong> <span>${unit.area || 'N/A'}</span></p>
+                                            <p class="unit-details"><i class="fas fa-leaf"></i><strong>Tipo:</strong> <span>${unit.type || 'N/A'}</span></p>
+
+                                            <div class="unit-controls-section">
+                                                <label class="control-label"><i class="fas fa-tint"></i> Umidade:</label>
+                                                <label class="switch">
+                                                    <input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="humidity" ${unit.hum_on ? 'checked' : ''}>
+                                                    <span class="slider round"></span>
+                                                </label>
+
+                                                <label class="control-label"><i class="fas fa-thermometer-half"></i> Temperatura:</label>
+                                                <label class="switch">
+                                                    <input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="temperature" ${unit.temp_on ? 'checked' : ''}>
+                                                    <span class="slider round"></span>
+                                                </label>
+
+                                                <label class="control-label"><i class="fas fa-lightbulb"></i> Iluminação:</label>
+                                                <label class="switch">
+                                                    <input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="light" ${unit.light_on ? 'checked' : ''}>
+                                                    <span class="slider round"></span>
+                                                </label>
+
+                                                <label class="control-label"><i class="fas fa-smog"></i> CO₂:</label>
+                                                <label class="switch">
+                                                    <input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="co2" ${unit.co2_on ? 'checked' : ''}>
+                                                    <span class="slider round"></span>
+                                                </label>
+
+                                                <label class="control-label"><i class="fas fa-flask"></i> pH:</label>
+                                                <label class="switch">
+                                                    <input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="ph" ${unit.ph_on ? 'checked' : ''}>
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-buttons">
+                                             <div class="button-row"> <button class="camera-button full-width" data-unit-id="${unit.id}"><i class="fas fa-video-slash"></i> Visualizar Câmera</button> </div>
+                                             <div class="button-row"> <button class="view-sensors-button half-width" data-unit-id="${unit.id}" data-page-target="sensors"><i class="fas fa-tachometer-alt"></i> Sensores</button> <button class="actuators-button half-width" data-unit-id="${unit.id}" data-page-target="actuators"><i class="fas fa-toggle-on"></i> Atuadores</button> </div>
+                                             <div class="button-row"> <button class="edit-button" data-unit-id="${unit.id}"><i class="fas fa-edit"></i> Editar</button> </div>
+                                        </div>
+                                    </div>`).join('')}
+                            </div>
+                        </div>`;
+                } else {
+                    htmlContent = '<p>Nenhuma unidade de cultivo encontrada. Crie uma na aba "Criar Unidade".</p>';
+                }
+            } catch (error) {
+                console.error("Erro ao carregar unidades:", error);
+                htmlContent = `<p style="color: red;">Erro ao carregar as unidades: ${error.message}</p>`;
+            }
+            return { title, htmlContent };
+        }
+
+        function renderCreateUnit() {
+            const title = 'Criar Nova Unidade';
+            const htmlContent = `<div class="create-unit-page"> <form id="create-unit-form" class="unit-form"> <div class="form-group"> <label for="unit-name" class="form-label">Nome da Unidade:</label> <input type="text" id="unit-name" class="form-input" placeholder="Nome da unidade de cultivo" required> </div> <div class="form-group"> <label for="unit-area" class="form-label">Área de Produção (m²):</label> <input type="text" id="unit-area" class="form-input" placeholder="Ex: 10" required> </div> <div class="form-group"> <label for="unit-type" class="form-label">Tipo de Cultivo:</label> <select id="unit-type" class="form-select"> <option value="Hidroponia">Hidroponia</option> <option value="Solo">Solo</option> </select> </div> <div class="form-group"> <label for="lighting-level" class="form-label">Nível Iluminação Ideal (%):</label> <input type="number" id="lighting-level" class="form-input" placeholder="Ex: 80" required min="0" max="100"> </div> <div class="form-group"> <label class="form-label">Sensores Associados:</label> <div style="display: flex; flex-direction: column; gap: 5px;"> <label><input type="checkbox" name="sensors" value="Umidade"> Sensor de Umidade</label> <label><input type="checkbox" name="sensors" value="Temperatura"> Sensor de Temperatura</label> <label><input type="checkbox" name="sensors" value="Iluminação"> Sensor de Iluminação</label> <label><input type="checkbox" name="sensors" value="CO2"> Sensor de CO₂</label> <label><input type="checkbox" name="sensors" value="pH"> Sensor de pH</label> </div> </div> <button type="submit" class="submit-button">Criar Unidade</button> </form> </div>`;
+            return { title, htmlContent };
+        }
+
+        function renderAddDevice() {
+            const title = 'Adicionar/Configurar Dispositivo';
+            const descriptions = {
+                irrigation: "<h4><i class='fas fa-faucet'></i> Sistema de Irrigação</h4><p>Controla o fornecimento de água e nutrientes para as plantas...</p><button class='submit-button' style='margin-top: 15px;'>Configurar Irrigação</button>",
+                lighting: "<h4><i class='fas fa-lightbulb'></i> Sistema de Iluminação</h4><p>Fornece luz artificial...</p><button class='submit-button' style='margin-top: 15px;'>Configurar Iluminação</button>",
+                ventilation: "<h4><i class='fas fa-wind'></i> Sistema de Ventilação</h4><p>Controla a circulação de ar...</p><button class='submit-button' style='margin-top: 15px;'>Configurar Ventilação</button>",
+                co2_sensor: "<h4><i class='fas fa-smog'></i> Sensor de CO₂</h4><p>Mede a concentração de dióxido de carbono...</p><button class='submit-button' style='margin-top: 15px;'>Adicionar Sensor CO₂</button>",
+                ph_sensor: "<h4><i class='fas fa-flask'></i> Sensor de pH</h4><p>Mede o nível de acidez...</p><button class='submit-button' style='margin-top: 15px;'>Adicionar Sensor pH</button>",
+                humidity_sensor: "<h4><i class='fas fa-tint'></i> Sensor de Umidade</h4><p>Mede a umidade relativa do ar...</p><button class='submit-button' style='margin-top: 15px;'>Adicionar Sensor Umidade</button>",
+                temperature_sensor: "<h4><i class='fas fa-thermometer-half'></i> Sensor de Temperatura</h4><p>Mede a temperatura do ar...</p><button class='submit-button' style='margin-top: 15px;'>Adicionar Sensor Temperatura</button>",
+                camera: "<h4><i class='fas fa-camera'></i> Câmera de Monitoramento</h4><p>Permite a visualização remota...</p><button class='submit-button' style='margin-top: 15px;'>Configurar Câmera</button>",
+            };
+            const htmlContent = `
+                <div class="add-device-page"> <div class="add-device-layout"> <div class="device-list-box"> <h3><i class="fas fa-list"></i> Tipos de Dispositivo</h3> <ul> ${Object.keys(descriptions).map(key => { const match = descriptions[key].match(/<i class='(.*?)'><\/i>(.*?)<\/h4>/); const iconClass = match ? match[1] : 'fas fa-question-circle'; const name = match ? match[2].trim() : key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); return `<li class="device-list-item" data-device-type="${key}"><i class="${iconClass}"></i> ${name}</li>`; }).join('')} </ul> </div> <div class="device-description-box" id="device-description-content"> <p class="placeholder">Selecione um dispositivo da lista...</p> </div> </div> </div>`;
+            return { title, htmlContent };
+        }
+
+        function renderSensors() {
+            const title = 'Dados dos Sensores';
+            const sensorData = { humidity: 72, temperature: 23, lighting: 5500, co2: 490, ph: 6.3 };
+            const htmlContent = `<div class="sensors-page"> <p style="text-align: center; margin-bottom: 20px; font-style: italic;">Exibindo dados gerais (simulados).</p> <div class="sensor-data"> <div class="sensor-item"> <strong class="sensor-label"><i class="fas fa-tint"></i> Umidade:</strong> <span id="humidity-sensor" class="sensor-value">${sensorData.humidity}</span>% </div> <div class="sensor-item"> <strong class="sensor-label"><i class="fas fa-thermometer-half"></i> Temperatura:</strong> <span id="temperature-sensor" class="sensor-value">${sensorData.temperature}</span>°C </div> <div class="sensor-item"> <strong class="sensor-label"><i class="fas fa-lightbulb"></i> Iluminação:</strong> <span id="lighting-sensor" class="sensor-value">${sensorData.lighting}</span> Lux </div> <div class="sensor-item"> <strong class="sensor-label"><i class="fas fa-smog"></i> CO₂:</strong> <span id="co2-sensor" class="sensor-value">${sensorData.co2}</span> ppm </div> <div class="sensor-item"> <strong class="sensor-label"><i class="fas fa-flask"></i> pH:</strong> <span id="ph-sensor" class="sensor-value">${sensorData.ph.toFixed(1)}</span> </div> </div> </div>`;
+            return { title, htmlContent };
+        }
+
+        function renderActuators() {
+            const title = 'Controle de Atuadores';
+            const actuatorsState = { irrigation: false, lighting: true, ventilation: false, co2_control: false, ph_control: true };
+            const htmlContent = `<div class="actuators-page"> <p style="text-align: center; margin-bottom: 20px; font-style: italic;">Controles gerais (simulados).</p> <div class="control-item"> <h3 class="control-title"><i class="fas fa-faucet"></i> Irrigação</h3> <div class="switch-container"> <label class="switch"> <input type="checkbox" id="irrigation" class="actuator-toggle" ${actuatorsState.irrigation ? 'checked' : ''}> <span class="slider round"></span> </label> <span id="irrigation-status" class="status">${actuatorsState.irrigation ? 'Ligado' : 'Desligado'}</span> </div> </div> <div class="control-item"> <h3 class="control-title"><i class="fas fa-lightbulb"></i> Iluminação</h3> <div class="switch-container"> <label class="switch"> <input type="checkbox" id="lighting-actuator" class="actuator-toggle" ${actuatorsState.lighting ? 'checked' : ''}> <span class="slider round"></span> </label> <span id="lighting-actuator-status" class="status">${actuatorsState.lighting ? 'Ligado' : 'Desligado'}</span> </div> </div> <div class="control-item"> <h3 class="control-title"><i class="fas fa-wind"></i> Ventilação</h3> <div class="switch-container"> <label class="switch"> <input type="checkbox" id="ventilation" class="actuator-toggle" ${actuatorsState.ventilation ? 'checked' : ''}> <span class="slider round"></span> </label> <span id="ventilation-status" class="status">${actuatorsState.ventilation ? 'Ligado' : 'Desligado'}</span> </div> </div> <div class="control-item"> <h3 class="control-title"><i class="fas fa-smog"></i> Controle de CO₂</h3> <div class="switch-container"> <label class="switch"> <input type="checkbox" id="co2_control" class="actuator-toggle" ${actuatorsState.co2_control ? 'checked' : ''}> <span class="slider round"></span> </label> <span id="co2_control-status" class="status">${actuatorsState.co2_control ? 'Ativo' : 'Inativo'}</span> </div> </div> <div class="control-item"> <h3 class="control-title"><i class="fas fa-flask"></i> Controle de pH</h3> <div class="switch-container"> <label class="switch"> <input type="checkbox" id="ph_control" class="actuator-toggle" ${actuatorsState.ph_control ? 'checked' : ''}> <span class="slider round"></span> </label> <span id="ph_control-status" class="status">${actuatorsState.ph_control ? 'Ativo' : 'Inativo'}</span> </div> </div> </div>`;
+            return { title, htmlContent };
+        }
+
+        // *** renderSettings MODIFICADO para incluir Gerenciar Alertas ***
+        function renderSettings() {
+            const title = 'Configurações';
+            const htmlContent = `<div class="settings-page">
+                <div class="setting-section">
+                    <h3 class="setting-section-title"><i class="fas fa-bell"></i> Alertas</h3>
+                    <div class="setting-options">
+                        <button id="create-alert-button" class="setting-action-button"> <i class="fas fa-plus-circle"></i> Criar Alerta </button>
+                        <button id="manage-alerts-button" class="setting-action-button"> <i class="fas fa-list-alt"></i> Gerenciar Alertas </button>
+                        <button id="alert-history-button" class="setting-action-button"> <i class="fas fa-history"></i> Histórico de Alertas </button>
+                    </div>
+                    <div id="manage-alerts-container" style="margin-top: 20px; display: none;">
+                         <h4>Alertas Configurados:</h4>
+                         <ul class="alert-list" id="alert-list-ul">
+                             <li>Carregando alertas...</li>
+                         </ul>
+                    </div>
+                </div>
+                <div class="setting-section">
+                    <h3 class="setting-section-title"><i class="fas fa-chart-line"></i> Visualização</h3>
+                    <div class="setting-options">
+                        <button id="view-graphs-button" class="setting-action-button"> <i class="fas fa-chart-area"></i> Ver Gráficos </button>
+                    </div>
+                </div>
+                <div class="setting-section">
+                    <h3 class="setting-section-title"><i class="fas fa-palette"></i> Aparência</h3>
+                    <div class="theme-options setting-options">
+                        <button class="theme-button light-theme"> <i class="fas fa-sun"></i> Modo Claro </button>
+                        <button class="theme-button dark-theme"> <i class="fas fa-moon"></i> Modo Escuro </button>
+                    </div>
+                </div>
+                <div class="setting-section">
+                    <h3 class="setting-section-title"><i class="fas fa-info-circle"></i> Sobre</h3>
+                    <div class="setting-options">
+                        <button id="settings-version-button" class="setting-action-button"> <i class="fas fa-code-branch"></i> Informações da Versão </button>
+                    </div>
+                </div>
+            </div>`;
+            return { title, htmlContent };
+        }
+
+        // *** NOVA função renderGraphs (placeholder para o conteúdo do popup) ***
+        // (A lógica real de busca e renderização do gráfico está em showGraphsPopup e updateChart)
+        function renderGraphs() {
+            const title = 'Gráficos de Histórico';
+            // O conteúdo principal é gerenciado pelo popup agora
+            return { title: title, htmlContent: '<p>Abrindo visualização de gráficos...</p>' };
+        }
+
+
+        function renderNotFound() {
+            return { title: 'Página não encontrada', htmlContent: '<p>O conteúdo solicitado não foi encontrado.</p>' };
+        }
+
+        // --- Mapeamento de Páginas (Adicionado 'graphs') ---
+        const pageRenderers = { 'dashboard': renderDashboard, 'units': renderUnits, 'create-unit': renderCreateUnit, 'add-device': renderAddDevice, 'sensors': renderSensors, 'actuators': renderActuators, 'settings': renderSettings, 'graphs': renderGraphs };
+        const pageSetups = { 'dashboard': setupDashboardListeners, 'units': setupUnitsListeners, 'create-unit': setupCreateUnitListeners, 'add-device': setupAddDeviceListeners, 'sensors': setupSensorsListeners, 'actuators': setupActuatorsListeners, 'settings': setupSettingsListeners, 'graphs': setupGraphsListeners }; // Adicionado setup para gráficos
+
+        // --- Funções de Configuração de Listeners ---
+
+        function setupDashboardListeners() {
+            console.log('Executando setupDashboardListeners...');
+            contentContainer.querySelectorAll('.dashboard-box').forEach(box => {
+                box.addEventListener('click', (event) => {
+                    if (event.target.closest('button, a, input, select, textarea, .switch')) return;
+                    const unitId = box.dataset.unitId;
+                    console.log(`Dashboard: Clicou no box da unidade ${unitId}. Navegando para página Unidades...`);
+                    loadPage('units');
+                });
+            });
+            console.log('Listeners do dashboard atribuídos.');
+        }
+
+        function setupUnitsListeners() {
+            console.log('Executando setupUnitsListeners...');
+            contentContainer.querySelectorAll('.unit-card .edit-button').forEach(button => {
+                button.addEventListener('click', () => { const unitId = button.closest('.unit-card').dataset.unitId; console.log(`Listener Unidades: Edit button clicked for unit ${unitId}`); showEditUnitPopup(unitId); });
+            });
+            contentContainer.querySelectorAll('.unit-card .camera-button').forEach(button => {
+                 button.addEventListener('click', () => { const unitId = button.closest('.unit-card').dataset.unitId; console.log(`Listener Unidades: Camera button clicked for unit ${unitId}`); showCameraPopup(unitId); });
+            });
+            contentContainer.querySelectorAll('.unit-card .view-sensors-button').forEach(button => {
+                button.addEventListener('click', () => { const unitId = button.closest('.unit-card').dataset.unitId; const targetPage = button.dataset.pageTarget; console.log(`Listener Unidades: Sensors button clicked for unit ${unitId}, target ${targetPage}`); loadPage(targetPage); });
+            });
+            contentContainer.querySelectorAll('.unit-card .actuators-button').forEach(button => {
+                button.addEventListener('click', () => { const unitId = button.closest('.unit-card').dataset.unitId; const targetPage = button.dataset.pageTarget; console.log(`Listener Unidades: Actuators button clicked for unit ${unitId}, target ${targetPage}`); loadPage(targetPage); });
+            });
+            contentContainer.querySelectorAll('.unit-control-toggle').forEach(toggle => {
+                 toggle.addEventListener('change', (event) => {
+                     const unitId = toggle.dataset.unitId;
+                     const control = toggle.dataset.control;
+                     const isChecked = toggle.checked;
+                     console.log(`Listener Unidades: Switch ${control} changed for unit ${unitId} to ${isChecked}`);
+                     toggleUnitControl(unitId, control, isChecked);
+                 });
+            });
+             contentContainer.querySelectorAll('.unit-card').forEach(card => {
+                 card.addEventListener('click', (event) => {
+                     if (event.target.closest('button') || event.target.closest('.switch')) return;
+                     const unitId = card.dataset.unitId;
+                     console.log(`Clicou no card da unidade ${unitId} (Units Page).`);
+                 });
+             });
+             console.log('Listeners de unidades atribuídos.');
+        }
+
+        function setupCreateUnitListeners() {
+            const createUnitForm = document.getElementById('create-unit-form');
+            if (createUnitForm) { createUnitForm.addEventListener('submit', handleCreateUnit); }
+        }
+
+        function setupAddDeviceListeners() {
+            const descriptions = {
+                irrigation: "<h4><i class='fas fa-faucet'></i> Sistema de Irrigação</h4><p>...</p><button class='submit-button' style='margin-top: 15px;'>Configurar Irrigação</button>", lighting: "<h4><i class='fas fa-lightbulb'></i> Sistema de Iluminação</h4><p>...</p><button class='submit-button' style='margin-top: 15px;'>Configurar Iluminação</button>", ventilation: "<h4><i class='fas fa-wind'></i> Sistema de Ventilação</h4><p>...</p><button class='submit-button' style='margin-top: 15px;'>Configurar Ventilação</button>", co2_sensor: "<h4><i class='fas fa-smog'></i> Sensor de CO₂</h4><p>...</p><button class='submit-button' style='margin-top: 15px;'>Adicionar Sensor CO₂</button>", ph_sensor: "<h4><i class='fas fa-flask'></i> Sensor de pH</h4><p>...</p><button class='submit-button' style='margin-top: 15px;'>Adicionar Sensor pH</button>", humidity_sensor: "<h4><i class='fas fa-tint'></i> Sensor de Umidade</h4><p>...</p><button class='submit-button' style='margin-top: 15px;'>Adicionar Sensor Umidade</button>", temperature_sensor: "<h4><i class='fas fa-thermometer-half'></i> Sensor de Temperatura</h4><p>...</p><button class='submit-button' style='margin-top: 15px;'>Adicionar Sensor Temperatura</button>", camera: "<h4><i class='fas fa-camera'></i> Câmera de Monitoramento</h4><p>...</p><button class='submit-button' style='margin-top: 15px;'>Configurar Câmera</button>",
+            };
+            const deviceListBox = contentContainer.querySelector('.device-list-box ul');
+            const descriptionBox = document.getElementById('device-description-content');
+            if (deviceListBox && descriptionBox) {
+                deviceListBox.addEventListener('click', (event) => {
+                    const listItem = event.target.closest('.device-list-item');
+                    if (!listItem) return;
+                    deviceListBox.querySelectorAll('.device-list-item').forEach(li => li.classList.remove('active'));
+                    listItem.classList.add('active');
+                    const deviceType = listItem.dataset.deviceType;
+                    const descriptionHtml = descriptions[deviceType] || "<p class='placeholder'>Descrição não disponível.</p>";
+                    descriptionBox.innerHTML = descriptionHtml;
+                    const configButton = descriptionBox.querySelector('button.submit-button');
+                    if (configButton) { configButton.addEventListener('click', () => { alert(`Ação de configuração para "${listItem.textContent.trim()}" (simulado).`); }); }
+                    applyThemeToDynamicContent();
+                });
+            }
+        }
+
+        function setupSensorsListeners() { /* Nada */ }
+
+        function setupActuatorsListeners() {
+            contentContainer.querySelectorAll('.actuator-toggle').forEach(toggle => {
+                toggle.addEventListener('change', (event) => { const actuatorId = event.target.id; const isChecked = event.target.checked; toggleActuator(actuatorId, isChecked); });
+            });
+        }
+
+        // *** setupSettingsListeners MODIFICADO ***
+        function setupSettingsListeners() {
+            const lightThemeButton = contentContainer.querySelector('.light-theme');
+            const darkThemeButton = contentContainer.querySelector('.dark-theme');
+            const createAlertBtn = contentContainer.querySelector('#create-alert-button');
+            const manageAlertsBtn = contentContainer.querySelector('#manage-alerts-button'); // Novo botão
+            const alertHistoryBtn = contentContainer.querySelector('#alert-history-button');
+            const viewGraphsBtn = contentContainer.querySelector('#view-graphs-button'); // Botão para gráficos
+            const settingsVersionBtn = contentContainer.querySelector('#settings-version-button');
+
+            if (lightThemeButton) lightThemeButton.addEventListener('click', () => setTheme('light'));
+            if (darkThemeButton) darkThemeButton.addEventListener('click', () => setTheme('dark'));
+            if (createAlertBtn) createAlertBtn.addEventListener('click', showCreateAlertPopup);
+            if (manageAlertsBtn) manageAlertsBtn.addEventListener('click', toggleManageAlerts); // Função para mostrar/esconder lista
+            if (alertHistoryBtn) alertHistoryBtn.addEventListener('click', () => alert('Histórico de Alertas (Implementação futura).'));
+            if (viewGraphsBtn) viewGraphsBtn.addEventListener('click', showGraphsPopup); // Abre popup de gráficos
+            if (settingsVersionBtn) settingsVersionBtn.addEventListener('click', showVersionPopup);
+        }
+
+        // *** NOVA função setupGraphsListeners ***
+        function setupGraphsListeners() {
+            // Adiciona listeners aos seletores dentro do popup de gráficos
+            if (graphUnitSelect) graphUnitSelect.addEventListener('change', updateChart);
+            if (graphSensorSelect) graphSensorSelect.addEventListener('change', updateChart);
+            // Carrega gráfico inicial quando a página/popup é configurado (se necessário)
+            // showGraphsPopup cuidará do carregamento inicial
+        }
+
+
+        // --- Funções de Lógica e Manipulação ---
+
+        function loadPage(page) {
+            console.log(`Carregando página: ${page}`);
+            // Limpa o intervalo de polling ao mudar de página
+            if (dataPollingIntervalId) {
+                clearInterval(dataPollingIntervalId);
+                dataPollingIntervalId = null;
+                console.log("Polling de dados interrompido.");
+            }
+
+            const renderer = pageRenderers[page] || renderNotFound;
+            const setup = pageSetups[page] || (() => {});
+
+            Promise.resolve(renderer())
+                .then(({ title, htmlContent }) => {
+                    pageTitle.textContent = title;
+                    contentContainer.innerHTML = htmlContent;
+                    applyThemeToDynamicContent();
+                    setup(); // Chama a função de setup da página
+
+                    // Inicia o polling se estiver no Dashboard ou Unidades
+                    if (page === 'dashboard' || page === 'units') {
+                        startDataPolling();
+                    }
+                })
+                .catch(error => {
+                    console.error(`Erro ao carregar a página ${page}:`, error);
+                    pageTitle.textContent = "Erro";
+                    contentContainer.innerHTML = `<p style="color: red;">Ocorreu um erro ao carregar a página: ${error.message}</p>`;
+                });
+
+            navLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`.nav-link[data-page="${page}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        function setTheme(theme) { const newClassName = `${theme}-mode`; bodyElement.className = newClassName; sidebar.className = `sidebar ${newClassName}`; mainContent.className = `main-content ${newClassName}`; localStorage.setItem('theme', theme); console.log(`Tema definido como: ${theme}`); applyThemeToDynamicContent(); }
+        function applyThemeToDynamicContent() {
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            const themeClass = `${currentTheme}-mode`;
+
+            const elementsToTheme = contentContainer.querySelectorAll(
+                '.dashboard-box, .unit-card, .edit-unit-box, .unit-form, .sensor-item, '+
+                '.actuators-page .control-item, .device-list-box, .device-description-box, '+
+                '.settings-page .setting-section, .settings-page .setting-section-title, '+
+                '.alert-list li, .graph-container' // Adicionado itens da lista de alertas e container de gráfico
+            );
+            elementsToTheme.forEach(el => {
+                el.classList.remove('light-mode', 'dark-mode');
+                el.classList.add(themeClass);
+            });
+
+            const popups = [versionPopup, cameraPopup, editUnitPopup, createAlertPopup, graphsPopup]; // Atualizado para graphsPopup
+            popups.forEach(popup => {
+                if (popup && popup.style.display !== 'none') {
+                    const popupContent = popup.querySelector('.popup-content');
+                    if (popupContent) {
+                        popupContent.classList.remove('light-mode', 'dark-mode');
+                        popupContent.classList.add(themeClass);
+                        popupContent.querySelectorAll('hr, .popup-buttons, .graph-container, .graph-controls, .form-select, .form-label').forEach(internalEl => { // Adicionado elementos do popup de gráfico
+                            internalEl.classList.remove('light-mode', 'dark-mode');
+                            internalEl.classList.add(themeClass);
+                        });
+                    }
+                }
+            });
+
+            const descriptionBoxContent = contentContainer.querySelector('#device-description-content');
+            if (descriptionBoxContent) { /* CSS geral aplica tema */ }
+
+            // Aplica tema ao gráfico se ele existir
+            if (currentChart) {
+                const isDarkMode = currentTheme === 'dark';
+                currentChart.options.scales.x.ticks.color = isDarkMode ? '#ccc' : '#666';
+                currentChart.options.scales.y.ticks.color = isDarkMode ? '#ccc' : '#666';
+                currentChart.options.scales.x.grid.color = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                currentChart.options.scales.y.grid.color = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                currentChart.options.plugins.legend.labels.color = isDarkMode ? '#eee' : '#333';
+                currentChart.options.plugins.title.color = isDarkMode ? '#eee' : '#333';
+                currentChart.update();
+            }
+        }
+        function loadInitialTheme() { const savedTheme = localStorage.getItem('theme') || 'light'; setTheme(savedTheme); }
+
+        // --- POLLING DE DADOS ---
+        function startDataPolling() {
+            console.log("Iniciando polling de dados...");
+            if (dataPollingIntervalId) {
+                clearInterval(dataPollingIntervalId); // Garante que só haja um intervalo ativo
+            }
+            // Busca inicial imediata
+            fetchAndUpdateSensorData();
+            // Define o intervalo
+            dataPollingIntervalId = setInterval(fetchAndUpdateSensorData, POLLING_INTERVAL);
+        }
+
+        async function fetchAndUpdateSensorData() {
+            console.log("Polling: buscando dados atuais...");
+            try {
+                const response = await fetch(`${API_BASE_URL}/units/current_readings`);
+                if (!response.ok) {
+                    console.error("Polling: Erro HTTP ao buscar dados:", response.status);
+                    return; // Não tenta atualizar se deu erro
+                }
+                const currentReadings = await response.json(); // Espera { unitId: { sensorType: value, ... }, ... }
+                console.log("Polling: Dados recebidos:", currentReadings);
+                updateSensorDisplays(currentReadings);
+            } catch (error) {
+                console.error("Polling: Erro na requisição:", error);
+                // Poderia parar o polling aqui se preferir: clearInterval(dataPollingIntervalId); dataPollingIntervalId = null;
+            }
+        }
+
+        function updateSensorDisplays(readings) {
+            for (const unitId in readings) {
+                for (const sensorType in readings[unitId]) {
+                    const value = readings[unitId][sensorType];
+                    // Procura o span correspondente no Dashboard ou na página de Unidades
+                    const spanElement = document.querySelector(`span[data-unit-id="${unitId}"][data-sensor="${sensorType}"]`);
+                    if (spanElement) {
+                        const formattedValue = formatSensorValue(sensorType, value);
+                        // Compara com valor atual para evitar atualizações desnecessárias e aplicar efeito
+                        if (spanElement.textContent !== formattedValue) {
+                            spanElement.textContent = formattedValue;
+                            // Adiciona classe para efeito visual rápido (piscar)
+                            spanElement.classList.add('value-updated');
+                            // Remove a classe após a animação
+                            setTimeout(() => {
+                                spanElement.classList.remove('value-updated');
+                            }, 700); // Duração da animação flash
+                        }
+                    }
+                }
+            }
+        }
+
+        function formatSensorValue(sensorType, value) {
+            if (value === null || value === undefined) return 'N/A';
+            switch(sensorType) {
+                case 'humidity': return `${value}%`;
+                case 'temperature': return `${value}°C`;
+                case 'lighting': return `${value}%`;
+                case 'co2': return `${value} ppm`;
+                case 'ph': return `${value.toFixed(1)}`; // pH geralmente tem 1 decimal
+                default: return `${value}`;
+            }
+        }
+        // --- FIM POLLING ---
+
+        async function handleCreateUnit(event) { event.preventDefault(); const unitName = document.getElementById('unit-name').value; const unitArea = document.getElementById('unit-area').value; const unitType = document.getElementById('unit-type').value; const lightingLevel = document.getElementById('lighting-level').value; const selectedSensors = Array.from(document.querySelectorAll('#create-unit-form input[name="sensors"]:checked')).map(cb => cb.value); if (!unitName || !unitArea || !lightingLevel || selectedSensors.length === 0) { alert("Preencha nome, área, iluminação ideal e selecione ao menos um sensor."); return; } const unitData = { name: unitName, area: unitArea, type: unitType, lighting_level: parseInt(lightingLevel, 10), sensors: selectedSensors }; console.log('Enviando dados da nova unidade:', unitData); try { const response = await fetch(`${API_BASE_URL}/units`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(unitData) }); if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(`Erro HTTP: ${response.status} - ${errorData.error || 'Erro desconhecido'}`); } const result = await response.json(); console.log('Unidade criada:', result); alert(`Unidade "${unitName}" criada com sucesso! (ID: ${result.id})`); event.target.reset(); loadPage('units'); } catch (error) { console.error("Erro ao criar unidade:", error); alert(`Erro ao criar unidade: ${error.message}`); } }
+        function showCameraPopup(unitId) { console.log(`Visualizando câmera da unidade ${unitId}`); const unitName = document.querySelector(`.unit-card[data-unit-id="${unitId}"] .unit-name`)?.textContent || `Unidade ${unitId}`; cameraPopupTitle.textContent = `Visualização da Câmera - ${unitName}`; cameraPopup.style.display = 'flex'; applyThemeToDynamicContent(); }
+        function hideCameraPopup() { cameraPopup.style.display = 'none'; }
+
+        function showEditUnitPopup(unitId) {
+            console.log(`Abrindo popup para editar unidade ${unitId}`);
+            const currentCard = document.querySelector(`.unit-card[data-unit-id="${unitId}"]`);
+            if (!currentCard) {
+                const currentDashCard = document.querySelector(`.dashboard-box[data-unit-id="${unitId}"]`);
+                if(currentDashCard) { alert("Edite a unidade a partir da página 'Unidades de Cultivo' para ter todos os detalhes."); console.warn(`Tentativa de editar unidade ${unitId} a partir do dashboard.`); return; }
+                console.error(`Card da unidade ${unitId} não encontrado.`); alert("Erro: dados da unidade não encontrados."); return;
+            }
+            const name = currentCard.dataset.name || ''; const area = currentCard.dataset.area || ''; const type = currentCard.dataset.type || 'Hidroponia'; const lightingIdeal = currentCard.dataset.lightingIdeal || ''; let currentSensors = []; try { currentSensors = JSON.parse(currentCard.dataset.sensors || '[]'); } catch(e) { console.error("Erro ao parsear sensores:", e); }
+            document.getElementById('edit-unit-id').value = unitId; document.getElementById('edit-unit-name').value = name; document.getElementById('edit-unit-area').value = area; document.getElementById('edit-unit-type').value = type; document.getElementById('edit-lighting-level').value = lightingIdeal;
+            const sensorContainer = document.getElementById('sensor-selection-container');
+            if(sensorContainer) { sensorContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => { const sensorName = checkbox.value; checkbox.checked = currentSensors.includes(sensorName); const quantityInputId = checkbox.id.replace('sensor', 'quantidade'); const quantityInput = document.getElementById(quantityInputId); if (quantityInput) { quantityInput.style.display = checkbox.checked ? 'inline-block' : 'none'; quantityInput.value = checkbox.checked ? 1 : ''; } checkbox.removeEventListener('change', handleSensorCheckboxChange); checkbox.addEventListener('change', handleSensorCheckboxChange); }); } else { console.error("Container de sensores não encontrado."); }
+
+            const deleteBtnInPopup = editUnitPopup.querySelector('#delete-unit-button');
+            if (deleteBtnInPopup) {
+                 const newDeleteBtn = deleteBtnInPopup.cloneNode(true);
+                 deleteBtnInPopup.parentNode.replaceChild(newDeleteBtn, deleteBtnInPopup);
+                 newDeleteBtn.addEventListener('click', () => { handleDeleteUnit(unitId); });
+            }
+            editUnitPopup.style.display = 'flex'; applyThemeToDynamicContent();
+        }
+        function handleSensorCheckboxChange(event) { const quantityInputId = event.target.id.replace('sensor', 'quantidade'); const quantityInput = document.getElementById(quantityInputId); if (quantityInput) { quantityInput.style.display = event.target.checked ? 'inline-block' : 'none'; if (!event.target.checked) { quantityInput.value = ''; } else { quantityInput.value = quantityInput.value || 1; } } }
+        async function handleSaveEdit(event) { event.preventDefault(); const unitId = document.getElementById('edit-unit-id').value; const unitName = document.getElementById('edit-unit-name').value; const unitArea = document.getElementById('edit-unit-area').value; const unitType = document.getElementById('edit-unit-type').value; const lightingLevel = document.getElementById('edit-lighting-level').value; const updatedSensors = Array.from(document.querySelectorAll('#sensor-selection-container input[type="checkbox"]:checked')).map(cb => cb.value); if (!unitId || !unitName || !unitArea || !lightingLevel) { alert("Preencha ID, Nome, Área e Nível de Iluminação."); return; } const updatedUnitData = { name: unitName, area: unitArea, type: unitType, lighting_level: parseInt(lightingLevel, 10), sensors: updatedSensors }; console.log(`Enviando atualização para unidade ${unitId}:`, updatedUnitData); try { const response = await fetch(`${API_BASE_URL}/units/${unitId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedUnitData) }); if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(`Erro HTTP: ${response.status} - ${errorData.error || 'Erro desconhecido'}`); } const result = await response.json(); console.log('Unidade atualizada:', result); alert(`Unidade "${unitName}" atualizada com sucesso!`); hideEditUnitPopup(); loadPage('units'); } catch (error) { console.error(`Erro ao salvar unidade ${unitId}:`, error); alert(`Erro ao salvar unidade: ${error.message}`); } }
+        function hideEditUnitPopup() { editUnitPopup.style.display = 'none'; }
+        async function handleDeleteUnit(unitId) {
+            const unitName = document.getElementById('edit-unit-name')?.value || `ID ${unitId}`;
+            if (confirm(`Tem certeza que deseja remover a unidade "${unitName}"?\nEsta ação não pode ser desfeita.`)) {
+                console.log(`Enviando requisição DELETE para ${API_BASE_URL}/units/${unitId}`);
+                try {
+                    const response = await fetch(`${API_BASE_URL}/units/${unitId}`, { method: 'DELETE' });
+                    if (!response.ok) { /* ... (error handling) ... */ throw new Error(`Erro ${response.status}`); }
+                    console.log(`Unidade ${unitId} removida com sucesso.`);
+                    alert(`Unidade "${unitName}" removida com sucesso!`);
+                    hideEditUnitPopup();
+                    loadPage('units');
+                } catch (error) { console.error(`Erro ao remover unidade ${unitId}:`, error); alert(`Erro ao remover unidade: ${error.message}`); }
+            }
+        }
+
+        // --- Lógica de Alertas ---
+        function showCreateAlertPopup() { console.log("Abrindo popup para criar alerta."); createAlertForm.reset(); createAlertPopup.style.display = 'flex'; applyThemeToDynamicContent(); }
+        function hideCreateAlertPopup() { createAlertPopup.style.display = 'none'; }
+        async function handleSaveAlert(event) { event.preventDefault(); const alertName = document.getElementById('alert-name').value; const device = document.getElementById('alert-device').value; const condition = document.getElementById('alert-condition').value; const limit = document.getElementById('alert-limit').value; const actionDevice = document.getElementById('alert-action-device').value; const actionState = document.getElementById('alert-action-state').value; if (!alertName || !device || !condition || (limit === '' && !['on', 'off'].includes(condition)) ) { alert("Preencha Nome, Dispositivo, Condição e Limite (se aplicável)."); return; } const alertData = { name: alertName, device: device, condition: condition, limit: limit ? parseFloat(limit) : null, action: actionDevice ? { device: actionDevice, state: actionState } : null }; console.log('Enviando novo Alerta:', alertData); try { const response = await fetch(`${API_BASE_URL}/alerts`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(alertData) }); if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(`Erro HTTP: ${response.status} - ${errorData.error || 'Erro desconhecido'}`); } const result = await response.json(); console.log('Alerta criado:', result); alert(`Alerta "${alertName}" criado com sucesso! (ID: ${result.id})`); hideCreateAlertPopup(); if(document.getElementById('manage-alerts-container')?.style.display === 'block') { loadAlertList(); } // Atualiza a lista se estiver visível
+            } catch (error) { console.error("Erro ao criar alerta:", error); alert(`Erro ao criar alerta: ${error.message}`); }
+        }
+
+        function toggleManageAlerts() {
+            const container = document.getElementById('manage-alerts-container');
+            if (!container) return;
+            const isVisible = container.style.display === 'block';
+            if (isVisible) {
+                container.style.display = 'none';
+            } else {
+                container.style.display = 'block';
+                loadAlertList(); // Carrega a lista ao mostrar
+            }
+        }
+
+        async function loadAlertList() {
+            const ul = document.getElementById('alert-list-ul');
+            if (!ul) return;
+            ul.innerHTML = '<li>Carregando alertas...</li>'; // Feedback visual
+            try {
+                const response = await fetch(`${API_BASE_URL}/alerts`);
+                if (!response.ok) throw new Error(`Erro ao buscar alertas: ${response.status}`);
+                const alerts = await response.json();
+
+                if (alerts && alerts.length > 0) {
+                    ul.innerHTML = alerts.map(alert => `
+                        <li>
+                            <span class="alert-details">
+                                <strong>${alert.name}</strong><br>
+                                <small>(${alert.device} ${alert.condition} ${alert.limit_value ?? ''})</small>
+                            </span>
+                            <button class="delete-alert-btn" data-alert-id="${alert.id}" title="Remover Alerta">&times;</button>
+                        </li>
+                    `).join('');
+                    // Adiciona listeners aos botões de deletar
+                    ul.querySelectorAll('.delete-alert-btn').forEach(btn => {
+                        btn.addEventListener('click', handleDeleteAlert);
+                    });
+                } else {
+                    ul.innerHTML = '<li>Nenhum alerta configurado.</li>';
+                }
+                applyThemeToDynamicContent(); // Aplica tema aos novos LIs
+            } catch (error) {
+                console.error("Erro ao carregar lista de alertas:", error);
+                ul.innerHTML = '<li><span style="color: red;">Erro ao carregar alertas.</span></li>';
+            }
+        }
+
+        async function handleDeleteAlert(event) {
+            const alertId = event.target.dataset.alertId;
+            if (!alertId) return;
+
+            if (confirm(`Tem certeza que deseja remover este alerta?`)) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/alerts/${alertId}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                         throw new Error(errorData.error || `Erro ${response.status} ao deletar alerta.`);
+                    }
+                    console.log(`Alerta ${alertId} deletado.`);
+                    loadAlertList(); // Recarrega a lista
+                } catch (error) {
+                     console.error("Erro ao deletar alerta:", error);
+                     alert(`Erro ao remover alerta: ${error.message}`);
+                }
+            }
+        }
+        // --- Fim Lógica Alertas ---
+
+        // --- Lógica Gráficos ---
+        async function showGraphsPopup() {
+            console.log("Abrindo popup de gráficos.");
+            // Popula select de unidades
+            if (graphUnitSelect) {
+                graphUnitSelect.innerHTML = '<option value="">Carregando unidades...</option>';
+                try {
+                    const response = await fetch(`${API_BASE_URL}/units`);
+                    const units = await response.json();
+                    if (units && units.length > 0) {
+                        graphUnitSelect.innerHTML = units.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+                        // Seleciona o primeiro por padrão, se houver
+                         if(units.length > 0) {
+                             graphUnitSelect.value = units[0].id;
+                         }
+                    } else {
+                         graphUnitSelect.innerHTML = '<option value="">Nenhuma unidade</option>';
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar unidades para gráfico:", error);
+                    graphUnitSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+                }
+            }
+             // Mostra o popup
+            graphsPopup.style.display = 'flex';
+            applyThemeToDynamicContent(); // Aplica tema ao popup visível
+             // Carrega o gráfico inicial
+            updateChart();
+        }
+
+        function hideGraphsPopup() {
+            if (graphsPopup) graphsPopup.style.display = 'none';
+            // Destroi gráfico anterior ao fechar para liberar memória
+            if (currentChart) {
+                currentChart.destroy();
+                currentChart = null;
+            }
+        }
+
+        async function updateChart() {
+            if (!graphUnitSelect || !graphSensorSelect || !graphCanvas) return;
+
+            const unitId = graphUnitSelect.value;
+            const sensorType = graphSensorSelect.value;
+            const unitName = graphUnitSelect.options[graphUnitSelect.selectedIndex]?.text || 'Unidade';
+            const sensorLabel = graphSensorSelect.options[graphSensorSelect.selectedIndex]?.text || sensorType;
+
+
+            if (!unitId || !sensorType) {
+                 console.log("Selecione unidade e sensor para ver gráfico.");
+                 // Limpa gráfico anterior se houver
+                 if (currentChart) {
+                     currentChart.destroy();
+                     currentChart = null;
+                 }
+                 // Poderia exibir uma mensagem no canvas
+                 const ctx = graphCanvas.getContext('2d');
+                 ctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height); // Limpa
+                 // ctx.fillText("Selecione Unidade e Sensor", 10, 50); // Exemplo
+                 return;
+            }
+
+            console.log(`Atualizando gráfico para Unidade ${unitId} (${unitName}), Sensor: ${sensorType}`);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/units/${unitId}/readings?sensor=${sensorType}&limit=50`); // Pede últimos 50 pontos
+                if (!response.ok) throw new Error(`Erro ${response.status} ao buscar dados do histórico.`);
+                const data = await response.json(); // Espera [{value: Y, timestamp: X}, ...]
+
+                if (!data || data.length === 0) {
+                    console.log("Nenhum dado histórico encontrado para este sensor/unidade.");
+                     if (currentChart) { currentChart.destroy(); currentChart = null; }
+                     const ctx = graphCanvas.getContext('2d');
+                     ctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+                     // ctx.fillText("Nenhum dado encontrado.", 10, 50);
+                     return;
+                }
+
+                // Prepara dados para Chart.js
+                const labels = data.map(d => new Date(d.timestamp)); // Eixo X (Datas)
+                const values = data.map(d => d.value); // Eixo Y (Valores)
+
+                const chartData = {
+                    labels: labels,
+                    datasets: [{
+                        label: `${sensorLabel} (${getSensorUnit(sensorType)})`,
+                        data: values,
+                        fill: false,
+                        borderColor: '#5bc0de', // Cor da linha
+                        tension: 0.1 // Curvatura leve
+                    }]
+                };
+
+                 // Destrói gráfico anterior antes de criar novo
+                if (currentChart) {
+                    currentChart.destroy();
+                }
+
+                // Cria o novo gráfico
+                const ctx = graphCanvas.getContext('2d');
+                const currentTheme = localStorage.getItem('theme') || 'light';
+                const isDarkMode = currentTheme === 'dark';
+
+                currentChart = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'minute', // Ajustar unidade conforme a densidade dos dados
+                                    tooltipFormat: 'Pp', // Formato do tooltip de data/hora
+                                    displayFormats: {
+                                        minute: 'HH:mm',
+                                        hour: 'HH:mm'
+                                    }
+                                },
+                                title: { display: true, text: 'Horário' },
+                                ticks: { color: isDarkMode ? '#ccc' : '#666' },
+                                grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
+                            },
+                            y: {
+                                title: { display: true, text: `Valor ${sensorLabel}` },
+                                ticks: { color: isDarkMode ? '#ccc' : '#666' },
+                                grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
+                            }
+                        },
+                        plugins: {
+                            legend: { labels: { color: isDarkMode ? '#eee' : '#333' } },
+                            title: { display: true, text: `Histórico de ${sensorLabel} - ${unitName}`, color: isDarkMode ? '#eee' : '#333' }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Erro ao atualizar gráfico:", error);
+                 if (currentChart) { currentChart.destroy(); currentChart = null; }
+                 const ctx = graphCanvas.getContext('2d');
+                 ctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+                 // ctx.fillText("Erro ao carregar dados.", 10, 50);
+            }
+        }
+
+        function getSensorUnit(sensorType) {
+            switch(sensorType) {
+                case 'humidity': return '%';
+                case 'temperature': return '°C';
+                case 'lighting': return '%'; // Ou Lux? Depende do que o backend simula/mede
+                case 'co2': return 'ppm';
+                case 'ph': return '';
+                default: return '';
+            }
+        }
+        // --- Fim Lógica Gráficos ---
+
+
+        // --- Outras Funções de Lógica ---
+        async function toggleUnitControl(unitId, control, isChecked) {
+            console.log(`Unidade ${unitId}: Controle '${control}' alterado para ${isChecked} (SIMULADO)`);
+            // TODO: Implementar fetch PUT/POST real para o backend aqui
+        }
+
+        async function toggleActuator(actuatorId, isChecked) {
+            const statusElement = document.getElementById(`${actuatorId}-status`);
+            const statusText = (actuatorId === 'ph_control' || actuatorId === 'co2_control') ? (isChecked ? 'Ativo' : 'Inativo') : (isChecked ? 'Ligado' : 'Desligado');
+            console.log(`Atuador ${actuatorId} -> ${statusText} (SIMULADO)`);
+            if (statusElement) { statusElement.textContent = statusText; }
+            else { console.warn(`Status element não encontrado para atuador: ${actuatorId}-status`); }
+             // TODO: Implementar fetch POST/PUT para /api/actuators/:actuatorId ou similar
+        }
+
+        function showVersionPopup() { if (versionPopup && versionInfoElement) { const currentVersionText = versionInfoElement.textContent || ''; const currentVersionNumber = currentVersionText.replace('Versão ', '').trim(); if (popupVersionNumberSpan) { popupVersionNumberSpan.textContent = currentVersionNumber; } versionPopup.style.display = 'flex'; applyThemeToDynamicContent(); } else { console.error("Elementos popup/versão não encontrados."); } }
+        function hideVersionPopup() { if (versionPopup) { versionPopup.style.display = 'none'; } }
+
+        // --- Inicialização e Listeners Globais ---
+        navLinks.forEach(link => { link.addEventListener('click', (event) => { event.preventDefault(); const page = link.dataset.page; if (page) { loadPage(page); } else { console.error("Link sem data-page:", link); } }); });
+        if (versionInfoElement) versionInfoElement.addEventListener('click', showVersionPopup);
+        if (popupCloseButton) popupCloseButton.addEventListener('click', hideVersionPopup);
+        if (cameraPopupCloseButton) cameraPopupCloseButton.addEventListener('click', hideCameraPopup);
+        if (editUnitPopupCloseButton) editUnitPopupCloseButton.addEventListener('click', hideEditUnitPopup);
+        if (editForm) editForm.addEventListener('submit', handleSaveEdit);
+        if (cancelEditButton) cancelEditButton.addEventListener('click', hideEditUnitPopup);
+        if (createAlertPopupCloseButton) createAlertPopupCloseButton.addEventListener('click', hideCreateAlertPopup);
+        if (createAlertForm) createAlertForm.addEventListener('submit', handleSaveAlert);
+        if (cancelAlertButton) cancelAlertButton.addEventListener('click', hideCreateAlertPopup);
+        if (graphsPopupCloseButton) graphsPopupCloseButton.addEventListener('click', hideGraphsPopup); // Fecha popup de gráficos
+
+        const allPopups = [versionPopup, cameraPopup, editUnitPopup, createAlertPopup, graphsPopup]; // Atualizado para graphsPopup
+        allPopups.forEach(popup => { if (popup) { popup.addEventListener('click', (event) => { if (event.target === popup) { /* Fecha popup se clicar fora do conteúdo */ if (popup === versionPopup) hideVersionPopup(); else if (popup === cameraPopup) hideCameraPopup(); else if (popup === editUnitPopup) hideEditUnitPopup(); else if (popup === createAlertPopup) hideCreateAlertPopup(); else if (popup === graphsPopup) hideGraphsPopup(); } }); } });
+
+        document.addEventListener('DOMContentLoaded', () => { loadInitialTheme(); loadPage(DEFAULT_PAGE); });
+
+    </script>
+</body>
+</html>
