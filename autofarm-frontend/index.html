@@ -10,327 +10,1846 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <style>
         /* Estilos CSS (Mantidos e adicionado .alert-history-item) */
-        body { font-family: 'Inter', sans-serif; margin: 0; display: flex; min-height: 100vh; transition: background-color 0.5s ease, color 0.5s ease; }
-        .wrapper { display: flex; width: 100%; }
-        .sidebar { width: 250px; transition: background-color 0.5s ease, color 0.5s ease; display: flex; flex-direction: column; padding: 20px 0; box-shadow: 2px 0 5px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; }
-        .logo { text-align: center; margin-bottom: 30px; font-size: 1.8rem; font-weight: 700; }
-        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
-        .nav-item { cursor: pointer; transition: background-color 0.3s ease; }
-        .nav-link { text-decoration: none; display: flex; align-items: center; padding: 15px 20px; transition: background-color 0.3s ease, color 0.3s ease; }
-        .nav-link:hover { background-color: rgba(255, 255, 255, 0.1); }
-        .nav-link.active { font-weight: bold; background-color: rgba(0, 0, 0, 0.1); }
-        .nav-link i { margin-right: 15px; font-size: 1.2rem; width: 20px; text-align: center; }
-        .version { font-size: 0.7rem; color: #aaa; position: absolute; bottom: 10px; left: 20px; cursor: pointer; transition: color 0.3s ease; }
-        .version:hover { opacity: 0.8; }
-        .main-content { flex-grow: 1; padding: 30px; transition: background-color 0.5s ease, color 0.5s ease; overflow-y: auto; }
-        #page-title { margin-top: 0; margin-bottom: 30px; font-weight: 700; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
-        body.light-mode { background-color: #f4f7f6; color: #333; }
-        .sidebar.light-mode { background-color: #2c3e50; color: #ecf0f1; }
-        .sidebar.light-mode .nav-link { color: #ecf0f1; }
-        .sidebar.light-mode .nav-link.active { color: #4CAF50; background-color: rgba(0, 0, 0, 0.2); }
-        .sidebar.light-mode .nav-link:hover { background-color: rgba(255, 255, 255, 0.1); color: #fff; }
-        .sidebar.light-mode .version { color: #bdc3c7; }
-        .main-content.light-mode { background-color: #f4f7f6; color: #333; }
-        .main-content.light-mode #page-title { border-bottom-color: #e0e0e0; }
-        body.dark-mode { background-color: #2a2a2a; color: #eee; }
-        .sidebar.dark-mode { background-color: #1e1e1e; color: #ccc; }
-        .sidebar.dark-mode .nav-link { color: #ccc; }
-        .sidebar.dark-mode .nav-link.active { color: #5cb85c; background-color: rgba(255, 255, 255, 0.1); }
-        .sidebar.dark-mode .nav-link:hover { background-color: rgba(255, 255, 255, 0.15); color: #fff; }
-        .sidebar.dark-mode .version { color: #777; }
-        .main-content.dark-mode { background-color: #2a2a2a; color: #eee; }
-        .main-content.dark-mode #page-title { border-bottom-color: #444; }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .wrapper {
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 250px;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link.active {
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .version {
+            font-size: 0.7rem;
+            color: #aaa;
+            position: absolute;
+            bottom: 10px;
+            left: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .version:hover {
+            opacity: 0.8;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-y: auto;
+        }
+
+        #page-title {
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-weight: 700;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+        }
+
+        body.light-mode {
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        .sidebar.light-mode {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+
+        .sidebar.light-mode .nav-link {
+            color: #ecf0f1;
+        }
+
+        .sidebar.light-mode .nav-link.active {
+            color: #4CAF50;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar.light-mode .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .sidebar.light-mode .version {
+            color: #bdc3c7;
+        }
+
+        .main-content.light-mode {
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        .main-content.light-mode #page-title {
+            border-bottom-color: #e0e0e0;
+        }
+
+        body.dark-mode {
+            background-color: #2a2a2a;
+            color: #eee;
+        }
+
+        .sidebar.dark-mode {
+            background-color: #1e1e1e;
+            color: #ccc;
+        }
+
+        .sidebar.dark-mode .nav-link {
+            color: #ccc;
+        }
+
+        .sidebar.dark-mode .nav-link.active {
+            color: #5cb85c;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.dark-mode .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .sidebar.dark-mode .version {
+            color: #777;
+        }
+
+        .main-content.dark-mode {
+            background-color: #2a2a2a;
+            color: #eee;
+        }
+
+        .main-content.dark-mode #page-title {
+            border-bottom-color: #444;
+        }
 
         /* Grid Layouts */
-        .dashboard-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .unit-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .dashboard-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .unit-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
 
         /* Estilo Base para Cards etc. */
-        .dashboard-box, .unit-card, .edit-unit-box, .device-list-box, .device-description-box, .popup-content, .alert-page-box, .graph-page-box { border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; border: 1px solid transparent; display: flex; flex-direction: column;}
-        .dashboard-box:hover, .unit-card:hover { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); transform: translateY(-2px); }
-        .dashboard-box h3, .unit-card h3, .device-list-box h3 { margin-top: 0; margin-bottom: 15px; font-weight: 600; border-bottom: 1px solid; padding-bottom: 10px; }
-        .card-content { flex-grow: 1; display: flex; flex-direction: column; }
-        .unit-card { /* Altura automática */ }
-        .dashboard-box { cursor: pointer; }
+        .dashboard-box,
+        .unit-card,
+        .edit-unit-box,
+        .device-list-box,
+        .device-description-box,
+        .popup-content,
+        .alert-page-box,
+        .graph-page-box {
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard-box:hover,
+        .unit-card:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .dashboard-box h3,
+        .unit-card h3,
+        .device-list-box h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-bottom: 1px solid;
+            padding-bottom: 10px;
+        }
+
+        .card-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .unit-card {
+            /* Altura automática */
+        }
+
+        .dashboard-box {
+            cursor: pointer;
+        }
 
         /* Estilo dados Dashboard */
-        .dashboard-data { font-size: 0.9rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .dashboard-data i { width: 16px; text-align: center; opacity: 0.7; flex-shrink: 0;}
-        .dashboard-data strong { min-width: 80px; flex-shrink: 0;}
-        .dashboard-data span { margin-left: auto; padding-left: 5px; text-align: right; font-weight: bold; /* Destaca valor */}
-        .value-updated { animation: flash 0.7s ease-out; }
-        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .dashboard-data {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dashboard-data i {
+            width: 16px;
+            text-align: center;
+            opacity: 0.7;
+            flex-shrink: 0;
+        }
+
+        .dashboard-data strong {
+            min-width: 80px;
+            flex-shrink: 0;
+        }
+
+        .dashboard-data span {
+            margin-left: auto;
+            padding-left: 5px;
+            text-align: right;
+            font-weight: bold;
+            /* Destaca valor */
+        }
+
+        .value-updated {
+            animation: flash 0.7s ease-out;
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
 
         /* Estilo dados Página Unidades */
-        .unit-details { font-size: 0.95rem; margin-bottom: 10px; display: flex; align-items: center; flex-wrap: nowrap; gap: 8px; }
-        .unit-details i { width: 16px; text-align: center; opacity: 0.8; flex-shrink: 0; }
-        .unit-details strong { min-width: 90px; display: inline-block; margin-right: 5px; flex-shrink: 0; }
-        .unit-details span { margin-left: auto; padding-left: 5px; text-align: right; font-weight: bold; /* Destaca valor */}
+        .unit-details {
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 8px;
+        }
+
+        .unit-details i {
+            width: 16px;
+            text-align: center;
+            opacity: 0.8;
+            flex-shrink: 0;
+        }
+
+        .unit-details strong {
+            min-width: 90px;
+            display: inline-block;
+            margin-right: 5px;
+            flex-shrink: 0;
+        }
+
+        .unit-details span {
+            margin-left: auto;
+            padding-left: 5px;
+            text-align: right;
+            font-weight: bold;
+            /* Destaca valor */
+        }
 
         /* Seção de Controles (Página Unidades) */
-        .unit-controls-section { margin-top: 20px; padding-top: 15px; border-top: 1px solid; display: grid; grid-template-columns: auto 1fr auto; gap: 12px 15px; align-items: center; }
-        .control-label { grid-column: 1; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; text-align: left; font-weight: bold; }
-        .control-label i { width: 16px; text-align: center; opacity: 0.8; }
-        .unit-controls-section .switch { grid-column: 3; justify-self: end; }
+        .unit-controls-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 12px 15px;
+            align-items: center;
+        }
+
+        .control-label {
+            grid-column: 1;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .control-label i {
+            width: 16px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        .unit-controls-section .switch {
+            grid-column: 3;
+            justify-self: end;
+        }
 
         /* Estilos do Switch */
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; flex-shrink: 0;}
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #4CAF50; }
-        input:focus + .slider { box-shadow: 0 0 1px #4CAF50; }
-        input:checked + .slider:before { transform: translateX(26px); }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #4CAF50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
 
         /* Botões de Ação (Página Unidades) */
-        .card-buttons { margin-top: auto; padding-top: 15px; border-top: 1px solid; display: flex; flex-direction: column; gap: 10px; }
-        .button-row { display: flex; gap: 10px; width: 100%; }
-        .card-buttons button { background-color: #5bc0de; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: background-color 0.3s ease; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; flex-grow: 0; flex-shrink: 1; flex-basis: auto; }
-        .card-buttons button:hover { background-color: #31b0d5; }
-        .card-buttons .full-width { flex-basis: 100%; flex-grow: 1; }
-        .card-buttons .half-width { flex-basis: calc(50% - 5px); flex-grow: 1; }
-        .card-buttons .edit-button { background-color: #f0ad4e; margin: 0 auto; min-width: 120px; flex-grow: 0; flex-basis: auto; }
-        .card-buttons .edit-button:hover { background-color: #ec971f; }
-        .card-buttons .camera-button { background-color: #777; }
-        .card-buttons .camera-button:hover { background-color: #555; }
+        .card-buttons {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .card-buttons button {
+            background-color: #5bc0de;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-grow: 0;
+            flex-shrink: 1;
+            flex-basis: auto;
+        }
+
+        .card-buttons button:hover {
+            background-color: #31b0d5;
+        }
+
+        .card-buttons .full-width {
+            flex-basis: 100%;
+            flex-grow: 1;
+        }
+
+        .card-buttons .half-width {
+            flex-basis: calc(50% - 5px);
+            flex-grow: 1;
+        }
+
+        .card-buttons .edit-button {
+            background-color: #f0ad4e;
+            margin: 0 auto;
+            min-width: 120px;
+            flex-grow: 0;
+            flex-basis: auto;
+        }
+
+        .card-buttons .edit-button:hover {
+            background-color: #ec971f;
+        }
+
+        .card-buttons .camera-button {
+            background-color: #777;
+        }
+
+        .card-buttons .camera-button:hover {
+            background-color: #555;
+        }
 
         /* --- Estilos de Temas --- */
-        .light-mode .dashboard-box, .light-mode .unit-card, .light-mode .edit-unit-box, .light-mode .unit-form, .light-mode .device-list-box, .light-mode .device-description-box, .light-mode .popup-content, .light-mode .alert-page-box, .light-mode .graph-page-box { background-color: #fff; color: #333; border-color: #e0e0e0; }
-        .light-mode .dashboard-box h3, .light-mode .unit-card h3, .light-mode .device-list-box h3 { border-bottom-color: #eee; }
-        .light-mode .unit-controls-section { border-top-color: #eee; }
-        .light-mode .card-buttons { border-top-color: #eee; }
-        .light-mode .form-input, .light-mode .form-select, .light-mode textarea { background-color: #fff; border: 1px solid #ccc; color: #333; }
-        .light-mode .form-input:focus, .light-mode .form-select:focus, .light-mode textarea:focus { border-color: #4CAF50; box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2); }
-        .light-mode .form-label { color: #555; }
-        .light-mode .device-list-box li { border-bottom: 1px solid #eee; }
-        .light-mode .device-list-box li:hover { background-color: #f9f9f9; }
-        .light-mode .device-list-box li.active { background-color: #e9f5e9; border-left-color: #4CAF50; }
-        .light-mode .popup-close { color: #888; }
-        .light-mode .popup-close:hover { color: #555; }
-        .light-mode hr { border: 0; height: 1px; background-color: #eee; }
-        .light-mode .setting-section-title, .light-mode .page-section-title { color: #444; border-bottom-color: #eee;}
-        .light-mode .setting-section:not(:last-child) { border-bottom-color: #eee; }
-        .light-mode .graph-container { background-color: #e9ecef; border-color: #dee2e6; color: #495057; }
-        .light-mode .alert-list li, .light-mode .alert-history-list li { border-bottom-color: #eee; } /* Inclui lista de histórico */
-        .light-mode .alert-list li:hover, .light-mode .alert-history-list li:hover { background-color: #f9f9f9;}
-        .light-mode .alert-list li.alert-inactive { opacity: 0.6; background-color: #f8f8f8; }
-        .light-mode .alert-list li.alert-inactive strong { text-decoration: line-through; }
-        .light-mode .delete-alert-btn { color: #d9534f; }
-        .light-mode .delete-alert-btn:hover { color: #c9302c; }
-        .light-mode .toggle-alert-btn.deactivate { background-color: #f0ad4e; border-color: #eea236; color: white; }
-        .light-mode .toggle-alert-btn.deactivate:hover { background-color: #ec971f; border-color: #d58512; }
-        .light-mode .toggle-alert-btn.activate { background-color: #5cb85c; border-color: #4cae4c; color: white; }
-        .light-mode .toggle-alert-btn.activate:hover { background-color: #449d44; border-color: #398439; }
-        .light-mode .alert-history-list { background-color: #fdfdfd; } /* Fundo leve para histórico */
+        .light-mode .dashboard-box,
+        .light-mode .unit-card,
+        .light-mode .edit-unit-box,
+        .light-mode .unit-form,
+        .light-mode .device-list-box,
+        .light-mode .device-description-box,
+        .light-mode .popup-content,
+        .light-mode .alert-page-box,
+        .light-mode .graph-page-box {
+            background-color: #fff;
+            color: #333;
+            border-color: #e0e0e0;
+        }
 
-        .dark-mode .dashboard-box, .dark-mode .unit-card, .dark-mode .edit-unit-box, .dark-mode .unit-form, .dark-mode .device-list-box, .dark-mode .device-description-box, .dark-mode .popup-content, .dark-mode .alert-page-box, .dark-mode .graph-page-box { background-color: #3a3a3a; color: #eee; border-color: #555; }
-        .dark-mode .dashboard-box h3, .dark-mode .unit-card h3, .dark-mode .device-list-box h3 { border-bottom-color: #555; }
-        .dark-mode .unit-controls-section { border-top-color: #555; }
-        .dark-mode .card-buttons { border-top-color: #555; }
-        .dark-mode .form-input, .dark-mode .form-select, .dark-mode textarea { background-color: #555; border: 1px solid #777; color: #eee; }
-        .dark-mode .form-input:focus, .dark-mode .form-select:focus, .dark-mode textarea:focus { border-color: #5cb85c; box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.3); }
-        .dark-mode .form-label { color: #ccc; }
-        .dark-mode .device-list-box li { border-bottom: 1px solid #555; }
-        .dark-mode .device-list-box li:hover { background-color: #4f4f4f; }
-        .dark-mode .device-list-box li.active { background-color: #4a5c4a; border-left-color: #5cb85c; }
-        .dark-mode .popup-close { color: #aaa; }
-        .dark-mode .popup-close:hover { color: #ddd; }
-        .dark-mode hr { border: 0; height: 1px; background-color: #555; }
-        .dark-mode .setting-section-title, .dark-mode .page-section-title { color: #ccc; border-bottom-color: #555; }
-        .dark-mode .setting-section:not(:last-child) { border-bottom-color: #555; }
-        .dark-mode .graph-container { background-color: #495057; border-color: #6c757d; color: #e9ecef; }
-        .dark-mode .alert-list li, .dark-mode .alert-history-list li { border-bottom-color: #555; } /* Inclui lista de histórico */
-        .dark-mode .alert-list li:hover, .dark-mode .alert-history-list li:hover { background-color: #4f4f4f;}
-        .dark-mode .alert-list li.alert-inactive { opacity: 0.5; background-color: #444; }
-        .dark-mode .alert-list li.alert-inactive strong { text-decoration: line-through; }
-        .dark-mode .delete-alert-btn { color: #e76f6b; }
-        .dark-mode .delete-alert-btn:hover { color: #d9534f; }
-        .dark-mode .toggle-alert-btn.deactivate { background-color: #d48830; border-color: #c0701a; color: white; }
-        .dark-mode .toggle-alert-btn.deactivate:hover { background-color: #c0701a; border-color: #a15f14; }
-        .dark-mode .toggle-alert-btn.activate { background-color: #4cae4c; border-color: #4cae4c; color: white; }
-        .dark-mode .toggle-alert-btn.activate:hover { background-color: #398439; border-color: #2d6a2d; }
-        .dark-mode .alert-history-list { background-color: #404040; } /* Fundo leve para histórico */
+        .light-mode .dashboard-box h3,
+        .light-mode .unit-card h3,
+        .light-mode .device-list-box h3 {
+            border-bottom-color: #eee;
+        }
 
-        .dark-mode .slider { background-color: #555; }
-        .dark-mode .slider:before { background-color: #bbb; }
-        .dark-mode input:checked + .slider { background-color: #5cb85c; }
-        .dark-mode input:checked + .slider:before { background-color: #eee; }
+        .light-mode .unit-controls-section {
+            border-top-color: #eee;
+        }
+
+        .light-mode .card-buttons {
+            border-top-color: #eee;
+        }
+
+        .light-mode .form-input,
+        .light-mode .form-select,
+        .light-mode textarea {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            color: #333;
+        }
+
+        .light-mode .form-input:focus,
+        .light-mode .form-select:focus,
+        .light-mode textarea:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .light-mode .form-label {
+            color: #555;
+        }
+
+        .light-mode .device-list-box li {
+            border-bottom: 1px solid #eee;
+        }
+
+        .light-mode .device-list-box li:hover {
+            background-color: #f9f9f9;
+        }
+
+        .light-mode .device-list-box li.active {
+            background-color: #e9f5e9;
+            border-left-color: #4CAF50;
+        }
+
+        .light-mode .popup-close {
+            color: #888;
+        }
+
+        .light-mode .popup-close:hover {
+            color: #555;
+        }
+
+        .light-mode hr {
+            border: 0;
+            height: 1px;
+            background-color: #eee;
+        }
+
+        .light-mode .setting-section-title,
+        .light-mode .page-section-title {
+            color: #444;
+            border-bottom-color: #eee;
+        }
+
+        .light-mode .setting-section:not(:last-child) {
+            border-bottom-color: #eee;
+        }
+
+        .light-mode .graph-container {
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+            color: #495057;
+        }
+
+        .light-mode .alert-list li,
+        .light-mode .alert-history-list li {
+            border-bottom-color: #eee;
+        }
+
+        /* Inclui lista de histórico */
+        .light-mode .alert-list li:hover,
+        .light-mode .alert-history-list li:hover {
+            background-color: #f9f9f9;
+        }
+
+        .light-mode .alert-list li.alert-inactive {
+            opacity: 0.6;
+            background-color: #f8f8f8;
+        }
+
+        .light-mode .alert-list li.alert-inactive strong {
+            text-decoration: line-through;
+        }
+
+        .light-mode .delete-alert-btn {
+            color: #d9534f;
+        }
+
+        .light-mode .delete-alert-btn:hover {
+            color: #c9302c;
+        }
+
+        .light-mode .toggle-alert-btn.deactivate {
+            background-color: #f0ad4e;
+            border-color: #eea236;
+            color: white;
+        }
+
+        .light-mode .toggle-alert-btn.deactivate:hover {
+            background-color: #ec971f;
+            border-color: #d58512;
+        }
+
+        .light-mode .toggle-alert-btn.activate {
+            background-color: #5cb85c;
+            border-color: #4cae4c;
+            color: white;
+        }
+
+        .light-mode .toggle-alert-btn.activate:hover {
+            background-color: #449d44;
+            border-color: #398439;
+        }
+
+        .light-mode .alert-history-list {
+            background-color: #fdfdfd;
+        }
+
+        /* Fundo leve para histórico */
+        .dark-mode .dashboard-box,
+        .dark-mode .unit-card,
+        .dark-mode .edit-unit-box,
+        .dark-mode .unit-form,
+        .dark-mode .device-list-box,
+        .dark-mode .device-description-box,
+        .dark-mode .popup-content,
+        .dark-mode .alert-page-box,
+        .dark-mode .graph-page-box {
+            background-color: #3a3a3a;
+            color: #eee;
+            border-color: #555;
+        }
+
+        .dark-mode .dashboard-box h3,
+        .dark-mode .unit-card h3,
+        .dark-mode .device-list-box h3 {
+            border-bottom-color: #555;
+        }
+
+        .dark-mode .unit-controls-section {
+            border-top-color: #555;
+        }
+
+        .dark-mode .card-buttons {
+            border-top-color: #555;
+        }
+
+        .dark-mode .form-input,
+        .dark-mode .form-select,
+        .dark-mode textarea {
+            background-color: #555;
+            border: 1px solid #777;
+            color: #eee;
+        }
+
+        .dark-mode .form-input:focus,
+        .dark-mode .form-select:focus,
+        .dark-mode textarea:focus {
+            border-color: #5cb85c;
+            box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.3);
+        }
+
+        .dark-mode .form-label {
+            color: #ccc;
+        }
+
+        .dark-mode .device-list-box li {
+            border-bottom: 1px solid #555;
+        }
+
+        .dark-mode .device-list-box li:hover {
+            background-color: #4f4f4f;
+        }
+
+        .dark-mode .device-list-box li.active {
+            background-color: #4a5c4a;
+            border-left-color: #5cb85c;
+        }
+
+        .dark-mode .popup-close {
+            color: #aaa;
+        }
+
+        .dark-mode .popup-close:hover {
+            color: #ddd;
+        }
+
+        .dark-mode hr {
+            border: 0;
+            height: 1px;
+            background-color: #555;
+        }
+
+        .dark-mode .setting-section-title,
+        .dark-mode .page-section-title {
+            color: #ccc;
+            border-bottom-color: #555;
+        }
+
+        .dark-mode .setting-section:not(:last-child) {
+            border-bottom-color: #555;
+        }
+
+        .dark-mode .graph-container {
+            background-color: #495057;
+            border-color: #6c757d;
+            color: #e9ecef;
+        }
+
+        .dark-mode .alert-list li,
+        .dark-mode .alert-history-list li {
+            border-bottom-color: #555;
+        }
+
+        /* Inclui lista de histórico */
+        .dark-mode .alert-list li:hover,
+        .dark-mode .alert-history-list li:hover {
+            background-color: #4f4f4f;
+        }
+
+        .dark-mode .alert-list li.alert-inactive {
+            opacity: 0.5;
+            background-color: #444;
+        }
+
+        .dark-mode .alert-list li.alert-inactive strong {
+            text-decoration: line-through;
+        }
+
+        .dark-mode .delete-alert-btn {
+            color: #e76f6b;
+        }
+
+        .dark-mode .delete-alert-btn:hover {
+            color: #d9534f;
+        }
+
+        .dark-mode .toggle-alert-btn.deactivate {
+            background-color: #d48830;
+            border-color: #c0701a;
+            color: white;
+        }
+
+        .dark-mode .toggle-alert-btn.deactivate:hover {
+            background-color: #c0701a;
+            border-color: #a15f14;
+        }
+
+        .dark-mode .toggle-alert-btn.activate {
+            background-color: #4cae4c;
+            border-color: #4cae4c;
+            color: white;
+        }
+
+        .dark-mode .toggle-alert-btn.activate:hover {
+            background-color: #398439;
+            border-color: #2d6a2d;
+        }
+
+        .dark-mode .alert-history-list {
+            background-color: #404040;
+        }
+
+        /* Fundo leve para histórico */
+        .dark-mode .slider {
+            background-color: #555;
+        }
+
+        .dark-mode .slider:before {
+            background-color: #bbb;
+        }
+
+        .dark-mode input:checked + .slider {
+            background-color: #5cb85c;
+        }
+
+        .dark-mode input:checked + .slider:before {
+            background-color: #eee;
+        }
 
         /* Demais estilos */
-        .unit-form { display: flex; flex-direction: column; max-width: 600px; margin: 20px auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
-        .form-group { margin-bottom: 20px; width: 100%; }
-        .form-label { display: block; margin-bottom: 8px; font-weight: bold; }
-        .form-input, .form-select, textarea { width: 100%; padding: 12px; border-radius: 5px; box-sizing: border-box; font-size: 1rem; }
-        textarea { min-height: 100px; resize: vertical; }
-        .submit-button { background-color: #4CAF50; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; width: auto; align-self: center; margin-top: 10px; font-size: 1rem; font-weight: 600; }
-        .submit-button:hover { background-color: #45a049; }
-        .cancel-button { background-color: #6c757d; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; width: auto; align-self: center; margin-top: 10px; font-size: 1rem; font-weight: 600; }
-        .cancel-button:hover { background-color: #5a6268; }
-        .delete-button { background-color: #d9534f; border-color: #d43f3a; color: white; }
-        .delete-button:hover { background-color: #c9302c; border-color: #ac2925;}
-        .actuators-page { max-width: 450px; margin: 20px auto; }
-        .actuators-page .control-item { padding: 20px; border: 1px solid; border-radius: 8px; margin-bottom: 25px; text-align: center; transition: background-color 0.3s ease, border-color 0.3s ease; }
-        .control-title { margin: 0 0 15px 0; font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .actuators-page .switch-container { display: flex; align-items: center; justify-content: center; margin-top: 10px; gap: 15px; }
-        .actuators-page .switch { flex-shrink: 0; }
-        .actuators-page .status { min-width: 60px; text-align: left; flex-shrink: 0; font-size: 0.9rem; font-style: italic;}
-        .sensors-page .sensor-data { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .sensors-page .sensor-item { padding: 20px; border: 1px solid; border-radius: 8px; text-align: center; transition: background-color 0.3s ease, border-color 0.3s ease; }
-        .sensor-label { display: block; font-weight: bold; margin-bottom: 10px; }
-        .sensor-value { font-size: 1.5rem; font-weight: 600; }
-        .settings-page .setting-section { margin-bottom: 20px; padding-bottom: 20px; }
-        .settings-page .setting-section:not(:last-child) { border-bottom: 1px solid; }
-        .settings-page .setting-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; }
-        .settings-page .setting-section-title, .page-section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid; }
-        .settings-page .setting-options, .alerts-page .alert-options, .graphs-page .graph-options { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;}
-        .settings-page .setting-action-button, .settings-page .theme-options button, .alerts-page .alert-action-button, .graphs-page .graph-action-button { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; border: 1px solid transparent; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .unit-form {
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-input,
+        .form-select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: auto;
+            align-self: center;
+            margin-top: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .submit-button:hover {
+            background-color: #45a049;
+        }
+
+        .cancel-button {
+            background-color: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: auto;
+            align-self: center;
+            margin-top: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .cancel-button:hover {
+            background-color: #5a6268;
+        }
+
+        .delete-button {
+            background-color: #d9534f;
+            border-color: #d43f3a;
+            color: white;
+        }
+
+        .delete-button:hover {
+            background-color: #c9302c;
+            border-color: #ac2925;
+        }
+
+        .actuators-page {
+            max-width: 450px;
+            margin: 20px auto;
+        }
+
+        .actuators-page .control-item {
+            padding: 20px;
+            border: 1px solid;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .control-title {
+            margin: 0 0 15px 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .actuators-page .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            gap: 15px;
+        }
+
+        .actuators-page .switch {
+            flex-shrink: 0;
+        }
+
+        .actuators-page .status {
+            min-width: 60px;
+            text-align: left;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .sensors-page .sensor-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .sensors-page .sensor-item {
+            padding: 20px;
+            border: 1px solid;
+            border-radius: 8px;
+            text-align: center;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .sensor-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .sensor-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .settings-page .setting-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+        }
+
+        .settings-page .setting-section:not(:last-child) {
+            border-bottom: 1px solid;
+        }
+
+        .settings-page .setting-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .settings-page .setting-section-title,
+        .page-section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid;
+        }
+
+        .settings-page .setting-options,
+        .alerts-page .alert-options,
+        .graphs-page .graph-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .settings-page .setting-action-button,
+        .settings-page .theme-options button,
+        .alerts-page .alert-action-button,
+        .graphs-page .graph-action-button {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            border: 1px solid transparent;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
 
         /* Botões específicos */
-        .alerts-page #create-alert-button { background-color: #5bc0de; color: white; border-color: #46b8da;}
-        .alerts-page #create-alert-button:hover { background-color: #31b0d5; border-color: #269abc;}
-        .alerts-page #manage-alerts-button { background-color: #f0ad4e; color: white; border-color: #eea236;}
-        .alerts-page #manage-alerts-button:hover { background-color: #ec971f; border-color: #d58512;}
-        .alerts-page #alert-history-button { background-color: #6c757d; color: white; border-color: #6c757d;}
-        .alerts-page #alert-history-button:hover { background-color: #5a6268; border-color: #545b62;}
+        .alerts-page #create-alert-button {
+            background-color: #5bc0de;
+            color: white;
+            border-color: #46b8da;
+        }
 
-        .settings-page #view-sensors-button { background-color: #5bc0de; color: white; border-color: #46b8da;}
-        .settings-page #view-sensors-button:hover { background-color: #31b0d5; border-color: #269abc;}
-        .settings-page #view-actuators-button { background-color: #f0ad4e; color: white; border-color: #eea236;}
-        .settings-page #view-actuators-button:hover { background-color: #ec971f; border-color: #d58512;}
+        .alerts-page #create-alert-button:hover {
+            background-color: #31b0d5;
+            border-color: #269abc;
+        }
 
-        .settings-page #settings-version-button { background-color: #777; color: white; border-color: #777;}
-        .settings-page #settings-version-button:hover { background-color: #555; border-color: #555;}
-        .settings-page .theme-options button.light-theme { background-color: #f9f9f9; color: #333; border-color: #ddd; }
-        .settings-page .theme-options button.dark-theme { background-color: #3a3a3a; color: #eee; border-color: #555; }
-        .settings-page .theme-options button.light-theme:hover { background-color: #eee; border-color: #ccc; }
-        .settings-page .theme-options button.dark-theme:hover { background-color: #555; border-color: #777; }
+        .alerts-page #manage-alerts-button {
+            background-color: #f0ad4e;
+            color: white;
+            border-color: #eea236;
+        }
+
+        .alerts-page #manage-alerts-button:hover {
+            background-color: #ec971f;
+            border-color: #d58512;
+        }
+
+        .alerts-page #alert-history-button {
+            background-color: #6c757d;
+            color: white;
+            border-color: #6c757d;
+        }
+
+        .alerts-page #alert-history-button:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+
+        .settings-page #view-sensors-button {
+            background-color: #5bc0de;
+            color: white;
+            border-color: #46b8da;
+        }
+
+        .settings-page #view-sensors-button:hover {
+            background-color: #31b0d5;
+            border-color: #269abc;
+        }
+
+        .settings-page #view-actuators-button {
+            background-color: #f0ad4e;
+            color: white;
+            border-color: #eea236;
+        }
+
+        .settings-page #view-actuators-button:hover {
+            background-color: #ec971f;
+            border-color: #d58512;
+        }
+
+        .settings-page #settings-version-button {
+            background-color: #777;
+            color: white;
+            border-color: #777;
+        }
+
+        .settings-page #settings-version-button:hover {
+            background-color: #555;
+            border-color: #555;
+        }
+
+        .settings-page .theme-options button.light-theme {
+            background-color: #f9f9f9;
+            color: #333;
+            border-color: #ddd;
+        }
+
+        .settings-page .theme-options button.dark-theme {
+            background-color: #3a3a3a;
+            color: #eee;
+            border-color: #555;
+        }
+
+        .settings-page .theme-options button.light-theme:hover {
+            background-color: #eee;
+            border-color: #ccc;
+        }
+
+        .settings-page .theme-options button.dark-theme:hover {
+            background-color: #555;
+            border-color: #777;
+        }
 
         /* Estilos para Alertas e Histórico */
-        .alert-list, .alert-history-list { list-style: none; padding: 0; margin-top: 15px; max-height: 400px; overflow-y: auto; } /* Limita altura e adiciona scroll */
-        .alert-list li, .alert-history-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid; transition: opacity 0.3s ease, background-color 0.3s ease; }
-        .alert-list li:last-child, .alert-history-list li:last-child { border-bottom: none; }
-        .alert-details { font-size: 0.9rem; flex-grow: 1; margin-right: 10px;}
-        .alert-actions { display: flex; gap: 8px; flex-shrink: 0; }
-        .alert-actions button { padding: 5px 10px; font-size: 0.8rem; }
-        .delete-alert-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0 5px; }
-        .alert-page-box { margin-top: 20px; padding: 20px; border-radius: 8px; border: 1px solid; }
-        .alert-history-list li { font-size: 0.85rem; padding: 8px 5px; } /* Estilo para itens do histórico */
-        .alert-history-list small { color: #888; margin-left: 10px; }
-        .dark-mode .alert-history-list small { color: #aaa; }
+        .alert-list,
+        .alert-history-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
 
+        /* Limita altura e adiciona scroll */
+        .alert-list li,
+        .alert-history-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px;
+            border-bottom: 1px solid;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+        }
+
+        .alert-list li:last-child,
+        .alert-history-list li:last-child {
+            border-bottom: none;
+        }
+
+        .alert-details {
+            font-size: 0.9rem;
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .alert-actions button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .delete-alert-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0 5px;
+        }
+
+        .alert-page-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid;
+        }
+
+        .alert-history-list li {
+            font-size: 0.85rem;
+            padding: 8px 5px;
+        }
+
+        /* Estilo para itens do histórico */
+        .alert-history-list small {
+            color: #888;
+            margin-left: 10px;
+        }
+
+        .dark-mode .alert-history-list small {
+            color: #aaa;
+        }
 
         /* Estilos para Gráficos */
-        .graphs-page { display: flex; flex-direction: column; gap: 20px; }
-        .graph-controls { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
-        .graph-container { padding: 15px; border-radius: 8px; border: 1px dashed; min-height: 400px; width: 100%; box-sizing: border-box;}
+        .graphs-page {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .graph-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .graph-container {
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed;
+            min-height: 400px;
+            width: 100%;
+            box-sizing: border-box;
+        }
 
         /* Add Device Page Styles */
         .add-device-page {}
-        .add-device-layout { display: flex; gap: 30px; flex-wrap: wrap; }
-        .device-list-box { flex: 0 0 300px; max-height: 500px; overflow-y: auto; }
-        .device-list-box ul { list-style: none; padding: 0; margin: 0; }
-        .device-list-box li { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid; transition: background-color 0.2s ease, border-left-color 0.2s ease; border-left: 3px solid transparent; display: flex; align-items: center; gap: 10px; }
-        .device-list-box li:last-child { border-bottom: none; }
-        .device-list-box li i { width: 20px; text-align: center; opacity: 0.7; }
-        .device-list-box li.active { font-weight: bold; border-left-width: 3px; }
-        .device-description-box { flex-grow: 1; min-height: 300px; }
-        .device-description-box h4 { margin-top: 0; font-size: 1.1rem; font-weight: 600; }
-        .device-description-box p { line-height: 1.6; }
-        .device-description-box .placeholder { color: #888; font-style: italic; }
+
+        .add-device-layout {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .device-list-box {
+            flex: 0 0 300px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .device-list-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .device-list-box li {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid;
+            transition: background-color 0.2s ease, border-left-color 0.2s ease;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .device-list-box li:last-child {
+            border-bottom: none;
+        }
+
+        .device-list-box li i {
+            width: 20px;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        .device-list-box li.active {
+            font-weight: bold;
+            border-left-width: 3px;
+        }
+
+        .device-description-box {
+            flex-grow: 1;
+            min-height: 300px;
+        }
+
+        .device-description-box h4 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .device-description-box p {
+            line-height: 1.6;
+        }
+
+        .device-description-box .placeholder {
+            color: #888;
+            font-style: italic;
+        }
 
         /* Popups restantes */
-        #version-popup, #camera-popup, #edit-unit-popup, #create-alert-popup { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.6); align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .popup-content { margin: auto; padding: 20px 30px; position: relative; max-width: 450px; width: 100%; text-align: left; }
-        #create-alert-popup .popup-content { max-width: 600px; }
-        #edit-unit-popup .popup-content { max-width: 750px; }
-        #edit-unit-popup .popup-content h2, #create-alert-popup .popup-content h2 { text-align: center; margin-top: 0; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid; }
-         .light-mode #edit-unit-popup .popup-content h2, .light-mode #create-alert-popup .popup-content h2 { border-bottom-color: #eee; }
-         .dark-mode #edit-unit-popup .popup-content h2, .dark-mode #create-alert-popup .popup-content h2 { border-bottom-color: #555; }
-        #popup-logo { max-width: 150px; height: auto; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }
-         #edit-unit-popup .popup-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid; }
-         #edit-unit-popup .popup-buttons button { margin-top: 0; align-self: auto; flex-grow: 1; min-width: 120px; }
-         #create-alert-popup .popup-buttons { display: flex; justify-content: center; gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 1px solid; }
-         #create-alert-popup .popup-buttons button { margin-top: 0; align-self: auto; }
-        .popup-close { position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 1; background: none; border: none; padding: 0; transition: color 0.3s ease; }
-        .popup-close:hover, .popup-close:focus { text-decoration: none; }
-        .popup-content hr { border: 0; height: 1px; margin: 15px 0; }
-        #camera-popup .popup-content { text-align: center; max-width: 600px; }
-        #camera-popup .video-frame { width: 100%; max-width: 500px; height: 300px; background-color: #333; color: #eee; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; border-radius: 5px; margin: 0 auto 15px auto; }
-        #camera-popup .video-frame i { font-size: 4rem; margin-right: 10px; }
-        #edit-unit-popup #edit-unit-form { margin-top: 0; padding: 0; box-shadow: none; border-radius: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center; }
-        #edit-unit-popup #edit-unit-form .form-group { margin-bottom: 0; width: auto; display: contents; }
-         #edit-unit-popup #edit-unit-form .form-group > label { grid-column: 1; text-align: right; padding-right: 10px; margin-bottom: 0; }
-         #edit-unit-popup #edit-unit-form .form-group > input, #edit-unit-popup #edit-unit-form .form-group > select, #edit-unit-popup #edit-unit-form .form-group > textarea { grid-column: 2; width: 100%; margin-bottom: 0; }
-         #edit-unit-popup #edit-unit-form .sensor-options { grid-column: 1 / 3; }
-         #edit-unit-popup #edit-unit-form .sensor-options .form-label { text-align: left; margin-bottom: 10px; }
-         #edit-unit-popup #edit-unit-form .sensor-item-edit { display: flex; align-items: center; margin-bottom: 5px; padding-left: 10px; }
-        #edit-unit-popup .sensor-item-edit label { text-align: left; padding-right: 10px; margin-right: 10px; flex-grow: 1; }
-        #edit-unit-popup .sensor-item-edit input[type="number"] { width: 60px; padding: 5px 8px; border-radius: 5px; border: 1px solid #ccc; margin-left: 5px; font-size: 0.9rem; }
-        #edit-unit-popup .popup-buttons { grid-column: 1 / 3; }
+        #version-popup,
+        #camera-popup,
+        #edit-unit-popup,
+        #create-alert-popup {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .popup-content {
+            margin: auto;
+            padding: 20px 30px;
+            position: relative;
+            max-width: 450px;
+            width: 100%;
+            text-align: left;
+        }
+
+        #create-alert-popup .popup-content {
+            max-width: 600px;
+        }
+
+        #edit-unit-popup .popup-content {
+            max-width: 750px;
+        }
+
+        #edit-unit-popup .popup-content h2,
+        #create-alert-popup .popup-content h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid;
+        }
+
+        .light-mode #edit-unit-popup .popup-content h2,
+        .light-mode #create-alert-popup .popup-content h2 {
+            border-bottom-color: #eee;
+        }
+
+        .dark-mode #edit-unit-popup .popup-content h2,
+        .dark-mode #create-alert-popup .popup-content h2 {
+            border-bottom-color: #555;
+        }
+
+        #popup-logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #edit-unit-popup .popup-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid;
+        }
+
+        #edit-unit-popup .popup-buttons button {
+            margin-top: 0;
+            align-self: auto;
+            flex-grow: 1;
+            min-width: 120px;
+        }
+
+        #create-alert-popup .popup-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid;
+        }
+
+        #create-alert-popup .popup-buttons button {
+            margin-top: 0;
+            align-self: auto;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            background: none;
+            border: none;
+            padding: 0;
+            transition: color 0.3s ease;
+        }
+
+        .popup-close:hover,
+        .popup-close:focus {
+            text-decoration: none;
+        }
+
+        .popup-content hr {
+            border: 0;
+            height: 1px;
+            margin: 15px 0;
+        }
+
+        #camera-popup .popup-content {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        #camera-popup .video-frame {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            background-color: #333;
+            color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            margin: 0 auto 15px auto;
+        }
+
+        #camera-popup .video-frame i {
+            font-size: 4rem;
+            margin-right: 10px;
+        }
+
+        #edit-unit-popup #edit-unit-form {
+            margin-top: 0;
+            padding: 0;
+            box-shadow: none;
+            border-radius: 0;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px 15px;
+            align-items: center;
+        }
+
+        #edit-unit-popup #edit-unit-form .form-group {
+            margin-bottom: 0;
+            width: auto;
+            display: contents;
+        }
+
+        #edit-unit-popup #edit-unit-form .form-group > label {
+            grid-column: 1;
+            text-align: right;
+            padding-right: 10px;
+            margin-bottom: 0;
+        }
+
+        #edit-unit-popup #edit-unit-form .form-group > input,
+        #edit-unit-popup #edit-unit-form .form-group > select,
+        #edit-unit-popup #edit-unit-form .form-group > textarea {
+            grid-column: 2;
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        #edit-unit-popup #edit-unit-form .sensor-options {
+            grid-column: 1 / 3;
+        }
+
+        #edit-unit-popup #edit-unit-form .sensor-options .form-label {
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        #edit-unit-popup #edit-unit-form .sensor-item-edit {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            padding-left: 10px;
+        }
+
+        #edit-unit-popup .sensor-item-edit label {
+            text-align: left;
+            padding-right: 10px;
+            margin-right: 10px;
+            flex-grow: 1;
+        }
+
+        #edit-unit-popup .sensor-item-edit input[type="number"] {
+            width: 60px;
+            padding: 5px 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-left: 5px;
+            font-size: 0.9rem;
+        }
+
+        #edit-unit-popup .popup-buttons {
+            grid-column: 1 / 3;
+        }
 
         /* Media Queries Responsivas */
         @media (max-width: 768px) {
-             body { flex-direction: column; }
-             .sidebar { width: 100%; max-height: 60px; overflow-y: hidden; flex-direction: row; justify-content: space-around; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 10px 0; position: fixed; bottom: 0; top: auto; z-index: 900; }
-             .sidebar .logo { display: none; }
-             .nav-list { display: flex; flex-direction: row; justify-content: space-around; align-items: center; width: 100%; flex-grow: 0; }
-             .nav-item { flex-grow: 1; text-align: center; }
-             .nav-link { flex-direction: column; padding: 5px; font-size: 0.75rem; line-height: 1.2; }
-             .nav-link i { margin-right: 0; margin-bottom: 3px; font-size: 1rem; width: auto; }
-             .version { display: none; }
-             .main-content { padding: 20px; margin-bottom: 70px; }
-             .dashboard-summary, .unit-list { grid-template-columns: 1fr; }
-             .unit-card, .dashboard-box { min-height: auto; }
-             .unit-controls-section { grid-template-columns: auto auto; gap: 10px 10px; }
-             .unit-controls-section .switch { justify-self: start; }
+            body {
+                flex-direction: column;
+            }
 
-             #edit-unit-popup .popup-content, #create-alert-popup .popup-content { max-width: 95%; max-height: 85vh; overflow-y: auto; padding: 15px; }
-             #edit-unit-popup #edit-unit-form { grid-template-columns: 1fr; gap: 5px; padding: 10px 0; }
-             #edit-unit-popup #edit-unit-form .form-group > label { grid-column: 1; text-align: left; padding-right: 0; }
-             #edit-unit-popup #edit-unit-form .form-group > input, #edit-unit-popup #edit-unit-form .form-group > select, #edit-unit-popup #edit-unit-form .form-group > textarea { grid-column: 1; }
-             #edit-unit-popup #edit-unit-form .sensor-options, #edit-unit-popup .popup-buttons { grid-column: 1; }
-             #edit-unit-popup .popup-buttons { flex-direction: column; gap: 10px; align-items: stretch; }
-             #edit-unit-popup .popup-buttons button { width: 100%; }
-             #create-alert-popup .popup-buttons { flex-direction: column; gap: 10px; align-items: stretch; }
-             #create-alert-popup .popup-buttons button { width: 100%; }
+            .sidebar {
+                width: 100%;
+                max-height: 60px;
+                overflow-y: hidden;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                padding: 10px 0;
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                z-index: 900;
+            }
 
-             .add-device-layout { flex-direction: column; }
-             .device-list-box { flex: 0 0 auto; max-height: 250px; }
-             .graph-controls { flex-direction: column; gap: 10px; }
-             .graph-controls .form-select { width: 100%; }
-             .alerts-page .alert-options { flex-direction: column; align-items: stretch; }
-             .alerts-page .alert-options button { width: 100%; }
-             .alert-list li, .alert-history-list li { flex-direction: column; align-items: flex-start; }
-             .alert-actions { margin-top: 8px; width: 100%; justify-content: flex-end; }
-             .alert-history-list small { display: block; margin-left: 0; margin-top: 4px; } /* Ajuste para histórico mobile */
+            .sidebar .logo {
+                display: none;
+            }
+
+            .nav-list {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                width: 100%;
+                flex-grow: 0;
+            }
+
+            .nav-item {
+                flex-grow: 1;
+                text-align: center;
+            }
+
+            .nav-link {
+                flex-direction: column;
+                padding: 5px;
+                font-size: 0.75rem;
+                line-height: 1.2;
+            }
+
+            .nav-link i {
+                margin-right: 0;
+                margin-bottom: 3px;
+                font-size: 1rem;
+                width: auto;
+            }
+
+            .version {
+                display: none;
+            }
+
+            .main-content {
+                padding: 20px;
+                margin-bottom: 70px;
+            }
+
+            .dashboard-summary,
+            .unit-list {
+                grid-template-columns: 1fr;
+            }
+
+            .unit-card,
+            .dashboard-box {
+                min-height: auto;
+            }
+
+            .unit-controls-section {
+                grid-template-columns: auto auto;
+                gap: 10px 10px;
+            }
+
+            .unit-controls-section .switch {
+                justify-self: start;
+            }
+
+            #edit-unit-popup .popup-content,
+            #create-alert-popup .popup-content {
+                max-width: 95%;
+                max-height: 85vh;
+                overflow-y: auto;
+                padding: 15px;
+            }
+
+            #edit-unit-popup #edit-unit-form {
+                grid-template-columns: 1fr;
+                gap: 5px;
+                padding: 10px 0;
+            }
+
+            #edit-unit-popup #edit-unit-form .form-group > label {
+                grid-column: 1;
+                text-align: left;
+                padding-right: 0;
+            }
+
+            #edit-unit-popup #edit-unit-form .form-group > input,
+            #edit-unit-popup #edit-unit-form .form-group > select,
+            #edit-unit-popup #edit-unit-form .form-group > textarea {
+                grid-column: 1;
+            }
+
+            #edit-unit-popup #edit-unit-form .sensor-options,
+            #edit-unit-popup .popup-buttons {
+                grid-column: 1;
+            }
+
+            #edit-unit-popup .popup-buttons {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            #edit-unit-popup .popup-buttons button {
+                width: 100%;
+            }
+
+            #create-alert-popup .popup-buttons {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            #create-alert-popup .popup-buttons button {
+                width: 100%;
+            }
+
+            .add-device-layout {
+                flex-direction: column;
+            }
+
+            .device-list-box {
+                flex: 0 0 auto;
+                max-height: 250px;
+            }
+
+            .graph-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .graph-controls .form-select {
+                width: 100%;
+            }
+
+            .alerts-page .alert-options {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .alerts-page .alert-options button {
+                width: 100%;
+            }
+
+            .alert-list li,
+            .alert-history-list li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .alert-actions {
+                margin-top: 8px;
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .alert-history-list small {
+                display: block;
+                margin-left: 0;
+                margin-top: 4px;
+            }
+
+            /* Ajuste para histórico mobile */
         }
     </style>
 </head>
-
 <body class="">
     <div class="wrapper">
         <div class="sidebar">
-            <h2 class="logo"> <span style="color: white;">Auto</span><span style="color: #4CAF50;">Farm</span> </h2>
+            <h2 class="logo">
+                <span style="color: white;">Auto</span><span style="color: #4CAF50;">Farm</span>
+            </h2>
             <ul class="nav-list">
-                <li class="nav-item"> <a href="#" class="nav-link" data-page="dashboard"><i class="fas fa-home"></i> Dashboard</a> </li>
-                <li class="nav-item"> <a href="#" class="nav-link" data-page="units"><i class="fas fa-seedling"></i> Unidades</a> </li>
-                <li class="nav-item"> <a href="#" class="nav-link" data-page="create-unit"><i class="fas fa-plus"></i> Criar Unidade</a> </li>
-                <li class="nav-item"> <a href="#" class="nav-link" data-page="add-device"><i class="fas fa-cogs"></i> Add Dispositivo</a> </li>
-                <li class="nav-item"> <a href="#" class="nav-link" data-page="alerts"><i class="fas fa-bell"></i> Alertas</a> </li>
-                <li class="nav-item"> <a href="#" class="nav-link" data-page="graphs"><i class="fas fa-chart-line"></i> Histórico</a> </li> <li class="nav-item"> <a href="#" class="nav-link" data-page="settings"><i class="fas fa-cog"></i> Configurações</a> </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="dashboard">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="units">
+                        <i class="fas fa-seedling"></i> Unidades de Cultivo
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="create-unit">
+                        <i class="fas fa-plus"></i> Criar Unidade
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="add-device">
+                        <i class="fas fa-cogs"></i> Add Dispositivo
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="alerts">
+                        <i class="fas fa-bell"></i> Alertas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="graphs">
+                        <i class="fas fa-chart-line"></i> Histórico
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="settings">
+                        <i class="fas fa-cog"></i> Configurações
+                    </a>
+                </li>
             </ul>
-            <footer class="version" id="version-info">Versão 2.11</footer> </div>
-
+            <footer class="version" id="version-info">Versão 2.12</footer>
+        </div>
         <div class="main-content">
             <h2 id="page-title">Carregando...</h2>
-            <div id="content-container"> </div>
+            <div id="content-container">
+            </div>
         </div>
     </div>
 
-    <div id="version-popup"> <div class="popup-content"> <button class="popup-close" id="popup-close-button">&times;</button> <h3>AutoFarm - Sistema de Automação para Cultivo</h3> <img src="AutoFarmLogo.jpg" alt="Logo AutoFarm" id="popup-logo"> <p><strong>Versão:</strong> <span id="popup-version-number">2.11</span></p> <hr> <p style="text-align: left; margin-bottom: 5px; font-size: 0.9rem;"> <strong>Desenvolvido por:</strong><br> Guilherme H. M. C.<br> Estudante de Engenharia de Software<br> Matrícula: 1514313-5 </p> <p style="text-align: left; margin-bottom: 5px; font-size: 0.9rem;"> <strong>Trabalho de Conclusão de Curso:</strong><br> Desenvolvimento de um Sistema de Automação para Cultivo de Hortaliças em Fazendas Verticais Urbanas<br> Orientadora: Professora Esp. Janaina Aparecida de Freitas </p> <hr> <p style="font-size: 0.85rem; margin-top: 10px; text-align: center;"> <small>UniCesumar - Maringá, PR<br>&copy; 2024-2025</small> </p> </div> </div>
-    <div id="camera-popup"> <div class="popup-content"> <button class="popup-close" id="camera-popup-close">&times;</button> <h3 id="camera-popup-title">Visualização da Câmera</h3> <div class="video-frame"> <i class="fas fa-video-slash"></i> Câmera Desativada </div> </div> </div>
-    <div id="edit-unit-popup"> <div class="popup-content"> <button class="popup-close" id="edit-unit-popup-close">&times;</button> <h2>Editar Unidade</h2> <form id="edit-unit-form"> <input type="hidden" id="edit-unit-id"> <div class="form-group"> <label for="edit-unit-name" class="form-label">Nome:</label> <input type="text" id="edit-unit-name" class="form-input" required> </div> <div class="form-group"> <label for="edit-unit-area" class="form-label">Área (m²):</label> <input type="text" id="edit-unit-area" class="form-input" required> </div> <div class="form-group"> <label for="edit-unit-type" class="form-label">Tipo Cultivo:</label> <select id="edit-unit-type" class="form-select"> <option value="Hidroponia">Hidroponia</option> <option value="Solo">Solo</option> </select> </div> <div class="form-group"> <label for="edit-lighting-level" class="form-label">Iluminação Ideal (%):</label> <input type="number" id="edit-lighting-level" class="form-input" placeholder="Ex: 80" required min="0" max="100"> </div> <div class="sensor-options"> <label class="form-label">Sensores Associados:</label> <div id="sensor-selection-container"> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-umidade" value="Umidade"> <label for="edit-sensor-umidade">Umidade</label> <input type="number" id="edit-quantidade-umidade" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-temperatura" value="Temperatura"> <label for="edit-sensor-temperatura">Temperatura</label> <input type="number" id="edit-quantidade-temperatura" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-iluminacao" value="Iluminação"> <label for="edit-sensor-iluminacao">Iluminação</label> <input type="number" id="edit-quantidade-iluminacao" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-co2" value="CO2"> <label for="edit-sensor-co2">CO₂</label> <input type="number" id="edit-quantidade-co2" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> <div class="sensor-item-edit"> <input type="checkbox" id="edit-sensor-ph" value="pH"> <label for="edit-sensor-ph">pH</label> <input type="number" id="edit-quantidade-ph" class="form-input" placeholder="Qt." style="display: none;" min="1"> </div> </div> </div> <div class="popup-buttons"> <button type="submit" class="submit-button" id="save-edit-button"> <i class="fas fa-save"></i> Salvar</button> <button type="button" class="cancel-button" id="cancel-edit-button"> <i class="fas fa-times"></i> Cancelar</button> <button type="button" class="delete-button" id="delete-unit-button"> <i class="fas fa-trash-alt"></i> Remover Unidade</button> </div> </form> </div> </div>
-    <div id="create-alert-popup"> <div class="popup-content"> <button class="popup-close" id="create-alert-popup-close">&times;</button> <h2>Criar Novo Alerta</h2> <form id="create-alert-form"> <div class="form-group"> <label for="alert-name" class="form-label">Nome do Alerta:</label> <input type="text" id="alert-name" class="form-input" placeholder="Ex: Nível Baixo pH Unidade 1" required> </div> <div class="form-group"> <label for="alert-device" class="form-label">Dispositivo/Sensor:</label> <select id="alert-device" class="form-select" required> <option value="">-- Selecione --</option> <option value="humidity_sensor">Sensor de Umidade</option> <option value="temperature_sensor">Sensor de Temperatura</option> <option value="lighting_sensor">Sensor de Iluminação</option> <option value="co2_sensor">Sensor de CO₂</option> <option value="ph_sensor">Sensor de pH</option> <option value="irrigation">Sistema de Irrigação</option> <option value="lighting">Sistema de Iluminação</option> <option value="ventilation">Sistema de Ventilação</option> </select> </div> <div class="form-group"> <label for="alert-limit" class="form-label">Condição/Limite:</label> <select id="alert-condition" class="form-select" style="margin-bottom: 10px;"> <option value=">">Maior que (>)</option> <option value="<">Menor que (<)</option> <option value="=">Igual a (=)</option> <option value="on">Ligar</option> <option value="off">Desligar</option> </select> <input type="number" id="alert-limit" class="form-input" placeholder="Valor (Ex: 25 ou 6.5)" required step="any"> <small style="display:block; margin-top: 5px;">Defina a condição e o valor (use ponto para decimais). Para Ligar/Desligar, o valor pode não ser necessário.</small> </div> <div class="form-group"> <label for="alert-action" class="form-label">Ação (Opcional):</label> <select id="alert-action-device" class="form-select" style="margin-bottom: 10px;"> <option value="">-- Nenhum (Apenas Notificar) --</option> <option value="irrigation">Sistema de Irrigação</option> <option value="lighting">Sistema de Iluminação</option> <option value="ventilation">Sistema de Ventilação</option> </select> <select id="alert-action-state" class="form-select"> <option value="on">Ligar</option> <option value="off">Desligar</option> </select> </div> <div class="popup-buttons"> <button type="submit" class="submit-button" id="save-alert-button">Salvar Alerta</button> <button type="button" class="cancel-button" id="cancel-alert-button">Cancelar</button> </div> </form> </div> </div>
+    <div id="version-popup">
+        <div class="popup-content">
+            <button class="popup-close" id="popup-close-button">&times;</button>
+            <h3>AutoFarm - Sistema de Automação para Cultivo</h3>
+            <img src="AutoFarmLogo.jpg" alt="Logo AutoFarm" id="popup-logo">
+            <p><strong>Versão:</strong> <span id="popup-version-number">2.12</span></p>
+            <hr>
+            <p style="text-align: left; margin-bottom: 5px; font-size: 0.9rem;">
+                <strong>Desenvolvido por:</strong><br>
+                Guilherme Henrique Marques Cardoso<br>
+                Estudante de Engenharia de Software<br>
+                Matrícula: 1514313-5
+            </p>
+            <p style="text-align: left; margin-bottom: 5px; font-size: 0.9rem;">
+                <strong>Trabalho de Conclusão de Curso:</strong><br>
+                Desenvolvimento de um Sistema de Automação para Cultivo de Hortaliças em Fazendas Verticais Urbanas<br>
+                Orientadora: Professora Esp. Janaina Aparecida de Freitas
+            </p>
+            <hr>
+            <p style="font-size: 0.85rem; margin-top: 10px; text-align: center;">
+                <small>UniCesumar - Maringá, PR<br>&copy; 2024-2025</small>
+            </p>
+        </div>
+    </div>
+
+    <div id="camera-popup">
+        <div class="popup-content">
+            <button class="popup-close" id="camera-popup-close">&times;</button>
+            <h3 id="camera-popup-title">Visualização da Câmera</h3>
+            <div class="video-frame">
+                <i class="fas fa-video-slash"></i> Câmera Desativada
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-unit-popup">
+        <div class="popup-content">
+            <button class="popup-close" id="edit-unit-popup-close">&times;</button>
+            <h2>Editar Unidade</h2>
+            <form id="edit-unit-form">
+                <input type="hidden" id="edit-unit-id">
+                <div class="form-group">
+                    <label for="edit-unit-name" class="form-label">Nome:</label>
+                    <input type="text" id="edit-unit-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-unit-area" class="form-label">Área (m²):</label>
+                    <input type="text" id="edit-unit-area" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-unit-type" class="form-label">Tipo Cultivo:</label>
+                    <select id="edit-unit-type" class="form-select">
+                        <option value="Hidroponia">Hidroponia</option>
+                        <option value="Solo">Solo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-lighting-level" class="form-label">Iluminação Ideal (%):</label>
+                    <input type="number" id="edit-lighting-level" class="form-input" placeholder="Ex: 80" required min="0"
+                           max="100">
+                </div>
+                <div class="sensor-options">
+                    <label class="form-label">Sensores Associados:</label>
+                    <div id="sensor-selection-container">
+                        <div class="sensor-item-edit">
+                            <input type="checkbox" id="edit-sensor-umidade" value="Umidade">
+                            <label for="edit-sensor-umidade">Umidade</label>
+                            <input type="number" id="edit-quantidade-umidade" class="form-input" placeholder="Qt."
+                                   style="display: none;" min="1">
+                        </div>
+                        <div class="sensor-item-edit">
+                            <input type="checkbox" id="edit-sensor-temperatura" value="Temperatura">
+                            <label for="edit-sensor-temperatura">Temperatura</label>
+                            <input type="number" id="edit-quantidade-temperatura" class="form-input" placeholder="Qt."
+                                   style="display: none;" min="1">
+                        </div>
+                        <div class="sensor-item-edit">
+                            <input type="checkbox" id="edit-sensor-iluminacao" value="Iluminação">
+                            <label for="edit-sensor-iluminacao">Iluminação</label>
+                            <input type="number" id="edit-quantidade-iluminacao" class="form-input" placeholder="Qt."
+                                   style="display: none;" min="1">
+                        </div>
+                        <div class="sensor-item-edit">
+                            <input type="checkbox" id="edit-sensor-co2" value="CO2">
+                            <label for="edit-sensor-co2">CO₂</label>
+                            <input type="number" id="edit-quantidade-co2" class="form-input" placeholder="Qt."
+                                   style="display: none;" min="1">
+                        </div>
+                        <div class="sensor-item-edit">
+                            <input type="checkbox" id="edit-sensor-ph" value="pH">
+                            <label for="edit-sensor-ph">pH</label>
+                            <input type="number" id="edit-quantidade-ph" class="form-input" placeholder="Qt."
+                                   style="display: none;" min="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="popup-buttons">
+                    <button type="submit" class="submit-button" id="save-edit-button">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                    <button type="button" class="cancel-button" id="cancel-edit-button">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="delete-button" id="delete-unit-button">
+                        <i class="fas fa-trash-alt"></i> Remover Unidade
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="create-alert-popup">
+        <div class="popup-content">
+            <button class="popup-close" id="create-alert-popup-close">&times;</button>
+            <h2>Criar Novo Alerta</h2>
+            <form id="create-alert-form">
+                <div class="form-group">
+                    <label for="alert-name" class="form-label">Nome do Alerta:</label>
+                    <input type="text" id="alert-name" class="form-input" placeholder="Ex: Nível Baixo pH Unidade 1"
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="alert-device" class="form-label">Dispositivo/Sensor:</label>
+                    <select id="alert-device" class="form-select" required>
+                        <option value="">-- Selecione --</option>
+                        <option value="humidity_sensor">Sensor de Umidade</option>
+                        <option value="temperature_sensor">Sensor de Temperatura</option>
+                        <option value="lighting_sensor">Sensor de Iluminação</option>
+                        <option value="co2_sensor">Sensor de CO₂</option>
+                        <option value="ph_sensor">Sensor de pH</option>
+                        <option value="irrigation">Sistema de Irrigação</option>
+                        <option value="lighting">Sistema de Iluminação</option>
+                        <option value="ventilation">Sistema de Ventilação</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="alert-limit" class="form-label">Condição/Limite:</label>
+                    <select id="alert-condition" class="form-select" style="margin-bottom: 10px;">
+                        <option value=">">Maior que (>)</option>
+                        <option value="<">Menor que (<)</option>
+                        <option value="=">Igual a (=)</option>
+                        <option value="on">Ligar</option>
+                        <option value="off">Desligar</option>
+                    </select>
+                    <input type="number" id="alert-limit" class="form-input" placeholder="Valor (Ex: 25 ou 6.5)" required
+                           step="any">
+                    <small style="display:block; margin-top: 5px;">Defina a condição e o valor (use ponto para
+                        decimais). Para Ligar/Desligar, o valor pode não ser necessário.</small>
+                </div>
+                <div class="form-group">
+                    <label for="alert-action" class="form-label">Ação (Opcional):</label>
+                    <select id="alert-action-device" class="form-select" style="margin-bottom: 10px;">
+                        <option value="">-- Nenhum (Apenas Notificar) --</option>
+                        <option value="irrigation">Sistema de Irrigação</option>
+                        <option value="lighting">Sistema de Iluminação</option>
+                        <option value="ventilation">Sistema de Ventilação</option>
+                    </select>
+                    <select id="alert-action-state" class="form-select">
+                        <option value="on">Ligar</option>
+                        <option value="off">Desligar</option>
+                    </select>
+                </div>
+                <div class="popup-buttons">
+                    <button type="submit" class="submit-button" id="save-alert-button">Salvar Alerta</button>
+                    <button type="button" class="cancel-button" id="cancel-alert-button">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         // --- Constantes e Variáveis Globais ---
@@ -365,74 +1884,817 @@
         const cancelAlertButton = document.getElementById('cancel-alert-button');
 
         // --- Funções de Renderização ---
-        async function renderDashboard() { /* Mantido */ const title = 'Visão Geral das Unidades'; let htmlContent = '<p>Carregando...</p>'; try { const response = await fetch(`${API_BASE_URL}/units`); if (!response.ok) throw new Error(`HTTP error ${response.status}`); const unitsData = await response.json(); if (unitsData && unitsData.length > 0) { htmlContent = `<div class="dashboard-summary">${unitsData.map(unit => `<div class="dashboard-box" data-unit-id="${unit.id}" title="Ver ${unit.name || 'Unidade'}"><h3 class="unit-name">${unit.name || 'Nome Indef.'}</h3><div class="card-content"><p class="dashboard-data"><i class="fas fa-tint"></i><strong>Umidade:</strong> <span data-unit-id="${unit.id}" data-sensor="humidity">${unit.humidity ?? 'N/A'}%</span></p><p class="dashboard-data"><i class="fas fa-thermometer-half"></i><strong>Temp.:</strong> <span data-unit-id="${unit.id}" data-sensor="temperature">${unit.temperature ?? 'N/A'}°C</span></p><p class="dashboard-data"><i class="fas fa-lightbulb"></i><strong>Luz:</strong> <span data-unit-id="${unit.id}" data-sensor="lighting">${unit.lighting ?? 'N/A'}%</span></p><p class="dashboard-data"><i class="fas fa-smog"></i><strong>CO₂:</strong> <span data-unit-id="${unit.id}" data-sensor="co2">${unit.co2 ?? 'N/A'} ppm</span></p><p class="dashboard-data"><i class="fas fa-flask"></i><strong>pH:</strong> <span data-unit-id="${unit.id}" data-sensor="ph">${unit.ph ?? 'N/A'}</span></p></div></div>`).join('')}</div>`; } else { htmlContent = '<p>Nenhuma unidade encontrada.</p>'; } } catch (error) { console.error("Erro dashboard:", error); htmlContent = `<p style="color:red;">Erro ao carregar dashboard.</p>`; } return { title, htmlContent }; }
-        async function renderUnits() { /* Mantido */ const title = 'Unidades de Cultivo'; let htmlContent = '<p>Carregando...</p>'; try { const response = await fetch(`${API_BASE_URL}/units`); if (!response.ok) throw new Error(`HTTP error ${response.status}`); const unitsData = await response.json(); if (unitsData && unitsData.length > 0) { htmlContent = `<div class="units-page"><div class="unit-list">${unitsData.map(unit => `<div class="unit-card" data-unit-id="${unit.id}" data-name="${unit.name || ''}" data-area="${(unit.area || '').replace(' m²', '')}" data-type="${unit.type || 'Hidroponia'}" data-lighting-ideal="${unit.lighting_level_ideal || ''}" data-sensors='${JSON.stringify(unit.sensors || [])}'><h3 class="unit-name">${unit.name || 'Nome Indef.'}</h3><div class="card-content"><p class="unit-details" data-sensor="humidity"><i class="fas fa-tint"></i><strong>Umidade:</strong> <span data-unit-id="${unit.id}" data-sensor="humidity">${unit.humidity ?? 'N/A'}%</span></p><p class="unit-details" data-sensor="temperature"><i class="fas fa-thermometer-half"></i><strong>Temperatura:</strong> <span data-unit-id="${unit.id}" data-sensor="temperature">${unit.temperature ?? 'N/A'}°C</span></p><p class="unit-details" data-sensor="lighting"><i class="fas fa-lightbulb"></i><strong>Iluminação:</strong> <span data-unit-id="${unit.id}" data-sensor="lighting">${unit.lighting ?? 'N/A'}%</span></p><p class="unit-details" data-sensor="co2"><i class="fas fa-smog"></i><strong>CO₂:</strong> <span data-unit-id="${unit.id}" data-sensor="co2">${unit.co2 ?? 'N/A'} ppm</span></p><p class="unit-details" data-sensor="ph"><i class="fas fa-flask"></i><strong>pH:</strong> <span data-unit-id="${unit.id}" data-sensor="ph">${unit.ph ?? 'N/A'}</span></p><p class="unit-details"><i class="fas fa-ruler-combined"></i><strong>Área:</strong> <span>${unit.area || 'N/A'}</span></p><p class="unit-details"><i class="fas fa-leaf"></i><strong>Tipo:</strong> <span>${unit.type || 'N/A'}</span></p><div class="unit-controls-section"><label class="control-label"><i class="fas fa-tint"></i> Umidade:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="humidity" ${unit.hum_on ? 'checked' : ''}><span class="slider round"></span></label><label class="control-label"><i class="fas fa-thermometer-half"></i> Temp.:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="temperature" ${unit.temp_on ? 'checked' : ''}><span class="slider round"></span></label><label class="control-label"><i class="fas fa-lightbulb"></i> Luz:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="light" ${unit.light_on ? 'checked' : ''}><span class="slider round"></span></label><label class="control-label"><i class="fas fa-smog"></i> CO₂:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="co2" ${unit.co2_on ? 'checked' : ''}><span class="slider round"></span></label><label class="control-label"><i class="fas fa-flask"></i> pH:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="ph" ${unit.ph_on ? 'checked' : ''}><span class="slider round"></span></label></div></div><div class="card-buttons"><div class="button-row"><button class="camera-button full-width" data-unit-id="${unit.id}"><i class="fas fa-video-slash"></i> Câmera</button></div><div class="button-row"><button class="view-sensors-button half-width" data-unit-id="${unit.id}" data-page-target="sensors"><i class="fas fa-tachometer-alt"></i> Sensores</button><button class="actuators-button half-width" data-unit-id="${unit.id}" data-page-target="actuators"><i class="fas fa-toggle-on"></i> Atuadores</button></div><div class="button-row"><button class="edit-button" data-unit-id="${unit.id}"><i class="fas fa-edit"></i> Editar</button></div></div></div>`).join('')}</div></div>`; } else { htmlContent = '<p>Nenhuma unidade encontrada.</p>'; } } catch (error) { console.error("Erro unidades:", error); htmlContent = `<p style="color:red;">Erro ao carregar unidades.</p>`; } return { title, htmlContent }; }
-        function renderCreateUnit() { /* Mantido */ const title = 'Criar Nova Unidade'; const htmlContent = `<div class="create-unit-page"><form id="create-unit-form" class="unit-form"><div class="form-group"><label for="unit-name" class="form-label">Nome:</label><input type="text" id="unit-name" class="form-input" required></div><div class="form-group"><label for="unit-area" class="form-label">Área (m²):</label><input type="text" id="unit-area" class="form-input" required></div><div class="form-group"><label for="unit-type" class="form-label">Tipo:</label><select id="unit-type" class="form-select"><option value="Hidroponia">Hidroponia</option><option value="Solo">Solo</option></select></div><div class="form-group"><label for="lighting-level" class="form-label">Iluminação Ideal (%):</label><input type="number" id="lighting-level" class="form-input" placeholder="Ex: 80" required min="0" max="100"></div><div class="form-group"><label class="form-label">Sensores:</label><div style="display: flex; flex-direction: column; gap: 5px;"><label><input type="checkbox" name="sensors" value="Umidade"> Umidade</label><label><input type="checkbox" name="sensors" value="Temperatura"> Temperatura</label><label><input type="checkbox" name="sensors" value="Iluminação"> Iluminação</label><label><input type="checkbox" name="sensors" value="CO2"> CO₂</label><label><input type="checkbox" name="sensors" value="pH"> pH</label></div></div><button type="submit" class="submit-button">Criar Unidade</button></form></div>`; return { title, htmlContent }; }
-        function renderAddDevice() { /* Mantido */ const title = 'Adicionar Dispositivo'; const descriptions = { irrigation: "<h4><i class='fas fa-faucet'></i> Irrigação</h4><p>...</p><button>Configurar</button>", lighting: "<h4><i class='fas fa-lightbulb'></i> Iluminação</h4><p>...</p><button>Configurar</button>", ventilation: "<h4><i class='fas fa-wind'></i> Ventilação</h4><p>...</p><button>Configurar</button>", co2_sensor: "<h4><i class='fas fa-smog'></i> Sensor CO₂</h4><p>...</p><button>Adicionar</button>", ph_sensor: "<h4><i class='fas fa-flask'></i> Sensor pH</h4><p>...</p><button>Adicionar</button>", humidity_sensor: "<h4><i class='fas fa-tint'></i> Sensor Umidade</h4><p>...</p><button>Adicionar</button>", temperature_sensor: "<h4><i class='fas fa-thermometer-half'></i> Sensor Temp.</h4><p>...</p><button>Adicionar</button>", camera: "<h4><i class='fas fa-camera'></i> Câmera</h4><p>...</p><button>Configurar</button>", }; const htmlContent = `<div class="add-device-page"><div class="add-device-layout"><div class="device-list-box"><h3>Tipos</h3><ul> ${Object.keys(descriptions).map(key => { const match = descriptions[key].match(/<i class='(.*?)'><\/i>(.*?)<\/h4>/); const icon = match ? match[1] : ''; const name = match ? match[2].trim() : key; return `<li class="device-list-item" data-device-type="${key}"><i class="${icon}"></i> ${name}</li>`; }).join('')}</ul></div><div class="device-description-box" id="device-description-content"><p class="placeholder">Selecione...</p></div></div></div>`; return { title, htmlContent }; }
-        function renderSensors() { /* Mantido */ const title = 'Dados dos Sensores'; const htmlContent = `<div class="sensors-page"><p>Dados gerais (simulados).</p><div class="sensor-data"><div class="sensor-item"><strong><i class="fas fa-tint"></i> Umidade:</strong> <span id="humidity-sensor" class="sensor-value">--</span>%</div><div class="sensor-item"><strong><i class="fas fa-thermometer-half"></i> Temp.:</strong> <span id="temperature-sensor" class="sensor-value">--</span>°C</div><div class="sensor-item"><strong><i class="fas fa-lightbulb"></i> Luz:</strong> <span id="lighting-sensor" class="sensor-value">--</span> Lux</div><div class="sensor-item"><strong><i class="fas fa-smog"></i> CO₂:</strong> <span id="co2-sensor" class="sensor-value">--</span> ppm</div><div class="sensor-item"><strong><i class="fas fa-flask"></i> pH:</strong> <span id="ph-sensor" class="sensor-value">--</span></div></div></div>`; return { title, htmlContent }; }
-        function renderActuators() { /* Mantido */ const title = 'Controle de Atuadores'; const htmlContent = `<div class="actuators-page"><p>Controles gerais (simulados).</p><div class="control-item"><h3><i class="fas fa-faucet"></i> Irrigação</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="irrigation" class="actuator-toggle"><span class="slider round"></span></label><span id="irrigation-status" class="status">Desligado</span></div></div><div class="control-item"><h3><i class="fas fa-lightbulb"></i> Iluminação</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="lighting-actuator" class="actuator-toggle"><span class="slider round"></span></label><span id="lighting-actuator-status" class="status">Desligado</span></div></div><div class="control-item"><h3><i class="fas fa-wind"></i> Ventilação</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="ventilation" class="actuator-toggle"><span class="slider round"></span></label><span id="ventilation-status" class="status">Desligado</span></div></div><div class="control-item"><h3><i class="fas fa-smog"></i> Controle CO₂</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="co2_control" class="actuator-toggle"><span class="slider round"></span></label><span id="co2_control-status" class="status">Inativo</span></div></div><div class="control-item"><h3><i class="fas fa-flask"></i> Controle pH</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="ph_control" class="actuator-toggle"><span class="slider round"></span></label><span id="ph_control-status" class="status">Inativo</span></div></div></div>`; return { title, htmlContent }; }
-        function renderSettings() { /* Mantido da v2.10 */ const title = 'Configurações'; const htmlContent = `<div class="settings-page"> <div class="setting-section"> <h3 class="setting-section-title"><i class="fas fa-sliders-h"></i> Controles e Leituras</h3> <div class="setting-options"> <button id="view-sensors-button" class="setting-action-button"> <i class="fas fa-tachometer-alt"></i> Ver Sensores </button> <button id="view-actuators-button" class="setting-action-button"> <i class="fas fa-toggle-on"></i> Ver Atuadores </button> </div> <p><small>Acesse as páginas de visualização de sensores e controle de atuadores.</small></p> </div> <div class="setting-section"> <h3 class="setting-section-title"><i class="fas fa-palette"></i> Aparência</h3> <div class="theme-options setting-options"> <button class="theme-button light-theme"> <i class="fas fa-sun"></i> Modo Claro </button> <button class="theme-button dark-theme"> <i class="fas fa-moon"></i> Modo Escuro </button> </div> </div> <div class="setting-section"> <h3 class="setting-section-title"><i class="fas fa-info-circle"></i> Sobre</h3> <div class="setting-options"> <button id="settings-version-button" class="setting-action-button"> <i class="fas fa-code-branch"></i> Informações da Versão </button> </div> </div> </div>`; return { title, htmlContent }; }
-        function renderAlerts() { /* Mantido da v2.10, remove texto futuro */
-            const title = 'Gerenciamento de Alertas';
-            const htmlContent = `<div class="alerts-page"><div class="alert-options"><button id="create-alert-button" class="alert-action-button"><i class="fas fa-plus-circle"></i> Criar Novo Alerta</button><button id="manage-alerts-button" class="alert-action-button"><i class="fas fa-list-alt"></i> Gerenciar Alertas</button><button id="alert-history-button" class="alert-action-button"><i class="fas fa-history"></i> Ver Histórico de Alertas</button></div><div id="manage-alerts-container" class="alert-page-box" style="display: none;"><h4 class="page-section-title" style="border: none; margin-bottom: 10px;">Alertas Configurados:</h4><ul class="alert-list" id="alert-list-ul"><li>Carregando...</li></ul></div><div id="alert-history-container" class="alert-page-box" style="display: none;"><h4 class="page-section-title" style="border: none; margin-bottom: 10px;">Histórico de Alertas Disparados:</h4><ul class="alert-history-list" id="alert-history-ul"><li>Carregando histórico...</li></ul></div></div>`;
+        async function renderDashboard() {
+            /* Mantido */
+            const title = 'Visão Geral das Unidades de Cultivo';
+            let htmlContent = '<p>Carregando...</p>';
+            try {
+                const response = await fetch(`${API_BASE_URL}/units`);
+                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                const unitsData = await response.json();
+                if (unitsData && unitsData.length > 0) {
+                    htmlContent = `<div class="dashboard-summary">${unitsData.map(unit => `<div class="dashboard-box" data-unit-id="${unit.id}" title="Ver ${unit.name || 'Unidade'}"><h3 class="unit-name">${unit.name || 'Nome Indef.'}</h3><div class="card-content"><p class="dashboard-data"><i class="fas fa-tint"></i><strong>Umidade:</strong> <span data-unit-id="${unit.id}" data-sensor="humidity">${unit.humidity ?? 'N/A'}%</span></p><p class="dashboard-data"><i class="fas fa-thermometer-half"></i><strong>Temp.:</strong> <span data-unit-id="${unit.id}" data-sensor="temperature">${unit.temperature ?? 'N/A'}°C</span></p><p class="dashboard-data"><i class="fas fa-lightbulb"></i><strong>Luz:</strong> <span data-unit-id="${unit.id}" data-sensor="lighting">${unit.lighting ?? 'N/A'}%</span></p><p class="dashboard-data"><i class="fas fa-smog"></i><strong>CO₂:</strong> <span data-unit-id="${unit.id}" data-sensor="co2">${unit.co2 ?? 'N/A'} ppm</span></p><p class="dashboard-data"><i class="fas fa-flask"></i><strong>pH:</strong> <span data-unit-id="${unit.id}" data-sensor="ph">${unit.ph ?? 'N/A'}</span></p></div></div>`).join('')}</div>`;
+                } else {
+                    htmlContent = '<p>Nenhuma unidade encontrada.</p>';
+                }
+            } catch (error) {
+                console.error("Erro dashboard:", error);
+                htmlContent = `<p style="color:red;">Erro ao carregar dashboard.</p>`;
+            }
             return { title, htmlContent };
         }
-        function renderGraphs() { /* Mantido da v2.10 */ const title = 'Visualização de Histórico'; const htmlContent = `<div class="graphs-page"><div class="graph-controls"><div class="form-group" style="min-width: 200px;"><label for="graph-unit-select" class="form-label">Unidade:</label><select id="graph-unit-select" class="form-select"><option value="">Carregando...</option></select></div><div class="form-group" style="min-width: 200px;"><label for="graph-sensor-select" class="form-label">Sensor:</label><select id="graph-sensor-select" class="form-select"><option value="temperature">Temperatura</option><option value="humidity">Umidade</option><option value="lighting">Iluminação</option><option value="co2">CO₂</option><option value="ph">pH</option></select></div></div><div class="graph-container"><canvas id="sensorHistoryChart"></canvas></div></div>`; return { title, htmlContent }; }
-        function renderNotFound() { /* Mantido */ return { title: 'Página não encontrada', htmlContent: '<p>O conteúdo solicitado não foi encontrado.</p>' }; }
+
+        async function renderUnits() {
+            /* Mantido */
+            const title = 'Unidades de Cultivo';
+            let htmlContent = '<p>Carregando...</p>';
+            try {
+                const response = await fetch(`${API_BASE_URL}/units`);
+                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                const unitsData = await response.json();
+                if (unitsData && unitsData.length > 0) {
+                    htmlContent = `<div class="units-page"><div class="unit-list">${unitsData.map(unit => `<div class="unit-card" data-unit-id="${unit.id}" data-name="${unit.name || ''}" data-area="${(unit.area || '').replace(' m²', '')}" data-type="${unit.type || 'Hidroponia'}" data-lighting-ideal="${unit.lighting_level_ideal || ''}" data-sensors='${JSON.stringify(unit.sensors || [])}'><h3 class="unit-name">${unit.name || 'Nome Indef.'}</h3><div class="card-content"><p class="unit-details" data-sensor="humidity"><i class="fas fa-tint"></i><strong>Umidade:</strong> <span data-unit-id="${unit.id}" data-sensor="humidity">${unit.humidity ?? 'N/A'}%</span></p><p class="unit-details" data-sensor="temperature"><i class="fas fa-thermometer-half"></i><strong>Temperatura:</strong> <span data-unit-id="${unit.id}" data-sensor="temperature">${unit.temperature ?? 'N/A'}°C</span></p><p class="unit-details" data-sensor="lighting"><i class="fas fa-lightbulb"></i><strong>Iluminação:</strong> <span data-unit-id="${unit.id}" data-sensor="lighting">${unit.lighting ?? 'N/A'}%</span></p><p class="unit-details" data-sensor="co2"><i class="fas fa-smog"></i><strong>CO₂:</strong> <span data-unit-id="${unit.id}" data-sensor="co2">${unit.co2 ?? 'N/A'} ppm</span></p><p class="unit-details" data-sensor="ph"><i class="fas fa-flask"></i><strong>pH:</strong> <span data-unit-id="${unit.id}" data-sensor="ph">${unit.ph ?? 'N/A'}</span></p><p class="unit-details"><i class="fas fa-ruler-combined"></i><strong>Área:</strong> <span>${unit.area || 'N/A'}</span></p><p class="unit-details"><i class="fas fa-leaf"></i><strong>Tipo:</strong> <span>${unit.type || 'N/A'}</span></p><div class="unit-controls-section"><label class="control-label"><i class="fas fa-tint"></i> Umidade:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="humidity" ${unit.hum_on ? 'checked' : ''}><span class="slider round"></span></label><label class="control-label"><i class="fas fa-thermometer-half"></i> Temp.:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="temperature" ${unit.temp_on ? 'checked' : ''}><span class="slider round"></span></label><label class="control-label"><i class="fas fa-lightbulb"></i> Luz:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="light" ${unit.light_on ? 'checked' : ''}><span class="slider round"></span></label><label class="control-label"><i class="fas fa-smog"></i> CO₂:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="co2" ${unit.co2_on ? 'checked' : ''}><span class="slider round"></span></label><label class="control-label"><i class="fas fa-flask"></i> pH:</label><label class="switch"><input type="checkbox" class="unit-control-toggle" data-unit-id="${unit.id}" data-control="ph" ${unit.ph_on ? 'checked' : ''}><span class="slider round"></span></label></div></div><div class="card-buttons"><div class="button-row"><button class="camera-button full-width" data-unit-id="${unit.id}"><i class="fas fa-video-slash"></i> Câmera</button></div><div class="button-row"><button class="view-sensors-button half-width" data-unit-id="${unit.id}" data-page-target="sensors"><i class="fas fa-tachometer-alt"></i> Sensores</button><button class="actuators-button half-width" data-unit-id="${unit.id}" data-page-target="actuators"><i class="fas fa-toggle-on"></i> Atuadores</button></div><div class="button-row"><button class="edit-button" data-unit-id="${unit.id}"><i class="fas fa-edit"></i> Editar</button></div></div></div>`).join('')}</div></div>`;
+                } else {
+                    htmlContent = '<p>Nenhuma unidade encontrada.</p>';
+                }
+            } catch (error) {
+                console.error("Erro unidades:", error);
+                htmlContent = `<p style="color:red;">Erro ao carregar unidades.</p>`;
+            }
+            return { title, htmlContent };
+        }
+
+        function renderCreateUnit() {
+            /* Mantido */
+            const title = 'Criar Nova Unidade de Cultivo';
+            const htmlContent = `<div class="create-unit-page"><form id="create-unit-form" class="unit-form"><div class="form-group"><label for="unit-name" class="form-label">Nome:</label><input type="text" id="unit-name" class="form-input" required></div><div class="form-group"><label for="unit-area" class="form-label">Área (m²):</label><input type="text" id="unit-area" class="form-input" required></div><div class="form-group"><label for="unit-type" class="form-label">Tipo:</label><select id="unit-type" class="form-select"><option value="Hidroponia">Hidroponia</option><option value="Solo">Solo</option></select></div><div class="form-group"><label for="lighting-level" class="form-label">Iluminação Ideal (%):</label><input type="number" id="lighting-level" class="form-input" placeholder="Ex: 80" required min="0" max="100"></div><div class="form-group"><label class="form-label">Sensores:</label><div style="display: flex; flex-direction: column; gap: 5px;"><label><input type="checkbox" name="sensors" value="Umidade"> Umidade</label><label><input type="checkbox" name="sensors" value="Temperatura"> Temperatura</label><label><input type="checkbox" name="sensors" value="Iluminação"> Iluminação</label><label><input type="checkbox" name="sensors" value="CO2"> CO₂</label><label><input type="checkbox" name="sensors" value="pH"> pH</label></div></div><button type="submit" class="submit-button">Criar Unidade</button></form></div>`;
+            return { title, htmlContent };
+        }
+
+        function renderAddDevice() {
+            /* Mantido */
+            const title = 'Adicionar Dispositivo';
+            const descriptions = {
+                irrigation: "<h4><i class='fas fa-faucet'></i> Irrigação</h4><p>...</p><button>Configurar</button>",
+                lighting: "<h4><i class='fas fa-lightbulb'></i> Iluminação</h4><p>...</p><button>Configurar</button>",
+                ventilation: "<h4><i class='fas fa-wind'></i> Ventilação</h4><p>...</p><button>Configurar</button>",
+                co2_sensor: "<h4><i class='fas fa-smog'></i> Sensor CO₂</h4><p>...</p><button>Adicionar</button>",
+                ph_sensor: "<h4><i class='fas fa-flask'></i> Sensor pH</h4><p>...</p><button>Adicionar</button>",
+                humidity_sensor: "<h4><i class='fas fa-tint'></i> Sensor Umidade</h4><p>...</p><button>Adicionar</button>",
+                temperature_sensor: "<h4><i class='fas fa-thermometer-half'></i> Sensor Temp.</h4><p>...</p><button>Adicionar</button>",
+                camera: "<h4><i class='fas fa-camera'></i> Câmera</h4><p>...</p><button>Configurar</button>",
+            };
+            const htmlContent = `<div class="add-device-page"><div class="add-device-layout"><div class="device-list-box"><h3>Tipos</h3><ul> ${Object.keys(descriptions).map(key => {
+                const match = descriptions[key].match(/<i class='(.*?)'><\/i>(.*?)<\/h4>/);
+                const icon = match ? match[1] : '';
+                const name = match ? match[2].trim() : key;
+                return `<li class="device-list-item" data-device-type="${key}"><i class="${icon}"></i> ${name}</li>`;
+            }).join('')}</ul></div><div class="device-description-box" id="device-description-content"><p class="placeholder">Selecione...</p></div></div></div>`;
+            return { title, htmlContent };
+        }
+
+        function renderSensors() {
+            /* Mantido */
+            const title = 'Dados dos Sensores';
+            const htmlContent = `<div class="sensors-page"><p>Dados gerais.</p><div class="sensor-data"><div class="sensor-item"><strong><i class="fas fa-tint"></i> Umidade:</strong> <span id="humidity-sensor" class="sensor-value">--</span>%</div><div class="sensor-item"><strong><i class="fas fa-thermometer-half"></i> Temp.:</strong> <span id="temperature-sensor" class="sensor-value">--</span>°C</div><div class="sensor-item"><strong><i class="fas fa-lightbulb"></i> Luz:</strong> <span id="lighting-sensor" class="sensor-value">--</span> Lux</div><div class="sensor-item"><strong><i class="fas fa-smog"></i> CO₂:</strong> <span id="co2-sensor" class="sensor-value">--</span> ppm</div><div class="sensor-item"><strong><i class="fas fa-flask"></i> pH:</strong> <span id="ph-sensor" class="sensor-value">--</span></div></div></div>`;
+            return { title, htmlContent };
+        }
+
+        function renderActuators() {
+            /* Mantido */
+            const title = 'Controle de Atuadores';
+            const htmlContent = `<div class="actuators-page"><p>Controles gerais.</p><div class="control-item"><h3><i class="fas fa-faucet"></i> Irrigação</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="irrigation" class="actuator-toggle"><span class="slider round"></span></label><span id="irrigation-status" class="status">Desligado</span></div></div><div class="control-item"><h3><i class="fas fa-lightbulb"></i> Iluminação</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="lighting-actuator" class="actuator-toggle"><span class="slider round"></span></label><span id="lighting-actuator-status" class="status">Desligado</span></div></div><div class="control-item"><h3><i class="fas fa-wind"></i> Ventilação</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="ventilation" class="actuator-toggle"><span class="slider round"></span></label><span id="ventilation-status" class="status">Desligado</span></div></div><div class="control-item"><h3><i class="fas fa-smog"></i> Controle CO₂</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="co2_control" class="actuator-toggle"><span class="slider round"></span></label><span id="co2_control-status" class="status">Inativo</span></div></div><div class="control-item"><h3><i class="fas fa-flask"></i> Controle pH</h3><div class="switch-container"><label class="switch"><input type="checkbox" id="ph_control" class="actuator-toggle"><span class="slider round"></span></label><span id="ph_control-status" class="status">Inativo</span></div></div></div>`;
+            return { title, htmlContent };
+        }
+
+        function renderSettings() {
+            /* Mantido da v2.10 */
+            const title = 'Configurações';
+            const htmlContent = `<div class="settings-page">
+    <div class="setting-section">
+        <h3 class="setting-section-title"><i class="fas fa-sliders-h"></i> Controles e Leituras</h3>
+        <div class="setting-options">
+            <button id="view-sensors-button" class="setting-action-button">
+                <i class="fas fa-tachometer-alt"></i> Ver Sensores
+            </button>
+            <button id="view-actuators-button" class="setting-action-button">
+                <i class="fas fa-toggle-on"></i> Ver Atuadores
+            </button>
+        </div>
+        <p><small>Acesse as páginas de visualização de sensores e controle de atuadores.</small></p>
+    </div>
+    <div class="setting-section">
+        <h3 class="setting-section-title"><i class="fas fa-palette"></i> Aparência</h3>
+        <div class="theme-options setting-options">
+            <button class="theme-button light-theme">
+                <i class="fas fa-sun"></i> Modo Claro
+            </button>
+            <button class="theme-button dark-theme">
+                <i class="fas fa-moon"></i> Modo Escuro
+            </button>
+        </div>
+    </div>
+    <div class="setting-section">
+        <h3 class="setting-section-title"><i class="fas fa-info-circle"></i> Sobre</h3>
+        <div class="setting-options">
+            <button id="settings-version-button" class="setting-action-button">
+                <i class="fas fa-code-branch"></i> Informações da Versão
+            </button>
+        </div>
+    </div>
+</div>`;
+            return { title, htmlContent };
+        }
+
+        function renderAlerts() {
+            /* Mantido da v2.10, remove texto futuro */
+            const title = 'Gerenciamento de Alertas';
+            const htmlContent = `<div class="alerts-page">
+    <div class="alert-options">
+        <button id="create-alert-button" class="alert-action-button"><i class="fas fa-plus-circle"></i> Criar Novo Alerta</button>
+        <button id="manage-alerts-button" class="alert-action-button"><i class="fas fa-list-alt"></i> Gerenciar Alertas</button>
+        <button id="alert-history-button" class="alert-action-button"><i class="fas fa-history"></i> Ver Histórico de Alertas</button>
+    </div>
+    <div id="manage-alerts-container" class="alert-page-box" style="display: none;">
+        <h4 class="page-section-title" style="border: none; margin-bottom: 10px;">Alertas Configurados:</h4>
+        <ul class="alert-list" id="alert-list-ul"><li>Carregando...</li></ul>
+    </div>
+    <div id="alert-history-container" class="alert-page-box" style="display: none;">
+        <h4 class="page-section-title" style="border: none; margin-bottom: 10px;">Histórico de Alertas Disparados:</h4>
+        <ul class="alert-history-list" id="alert-history-ul"><li>Carregando histórico...</li></ul>
+    </div>
+</div>`;
+            return { title, htmlContent };
+        }
+
+        function renderGraphs() {
+            /* Mantido da v2.10 */
+            const title = 'Visualização de Histórico';
+            const htmlContent = `<div class="graphs-page">
+    <div class="graph-controls">
+        <div class="form-group" style="min-width: 200px;">
+            <label for="graph-unit-select" class="form-label">Unidade:</label>
+            <select id="graph-unit-select" class="form-select"><option value="">Carregando...</option></select>
+        </div>
+        <div class="form-group" style="min-width: 200px;">
+            <label for="graph-sensor-select" class="form-label">Sensor:</label>
+            <select id="graph-sensor-select" class="form-select">
+                <option value="temperature">Temperatura</option>
+                <option value="humidity">Umidade</option>
+                <option value="lighting">Iluminação</option>
+                <option value="co2">CO₂</option>
+                <option value="ph">pH</option>
+            </select>
+        </div>
+    </div>
+    <div class="graph-container">
+        <canvas id="sensorHistoryChart"></canvas>
+    </div>
+</div>`;
+            return { title, htmlContent };
+        }
+
+        function renderNotFound() {
+            /* Mantido */
+            return { title: 'Página não encontrada', htmlContent: '<p>O conteúdo solicitado não foi encontrado.</p>' };
+        }
 
         // --- Mapeamento (Mantido) ---
-        const pageRenderers = { 'dashboard': renderDashboard, 'units': renderUnits, 'create-unit': renderCreateUnit, 'add-device': renderAddDevice, 'alerts': renderAlerts, 'graphs': renderGraphs, 'settings': renderSettings, 'sensors': renderSensors, 'actuators': renderActuators };
-        const pageSetups = { 'dashboard': setupDashboardListeners, 'units': setupUnitsListeners, 'create-unit': setupCreateUnitListeners, 'add-device': setupAddDeviceListeners, 'alerts': setupAlertsListeners, 'graphs': setupGraphsListeners, 'settings': setupSettingsListeners, 'sensors': setupSensorsListeners, 'actuators': setupActuatorsListeners };
+        const pageRenderers = {
+            'dashboard': renderDashboard,
+            'units': renderUnits,
+            'create-unit': renderCreateUnit,
+            'add-device': renderAddDevice,
+            'alerts': renderAlerts,
+            'graphs': renderGraphs,
+            'settings': renderSettings,
+            'sensors': renderSensors,
+            'actuators': renderActuators
+        };
+        const pageSetups = {
+            'dashboard': setupDashboardListeners,
+            'units': setupUnitsListeners,
+            'create-unit': setupCreateUnitListeners,
+            'add-device': setupAddDeviceListeners,
+            'alerts': setupAlertsListeners,
+            'graphs': setupGraphsListeners,
+            'settings': setupSettingsListeners,
+            'sensors': setupSensorsListeners,
+            'actuators': setupActuatorsListeners
+        };
 
         // --- Setup Listeners (Adaptados) ---
-        function setupDashboardListeners() { /* Mantido */ console.log('Executando setupDashboardListeners...'); contentContainer.querySelectorAll('.dashboard-box').forEach(box => { box.addEventListener('click', (event) => { if (event.target.closest('button, a, input, select, textarea, .switch')) return; const unitId = box.dataset.unitId; loadPage('units'); }); }); }
-        function setupUnitsListeners() { /* Mantido */ console.log('Executando setupUnitsListeners...'); contentContainer.querySelectorAll('.unit-card .edit-button').forEach(button => { button.addEventListener('click', () => { const unitId = button.closest('.unit-card').dataset.unitId; showEditUnitPopup(unitId); }); }); contentContainer.querySelectorAll('.unit-card .camera-button').forEach(button => { button.addEventListener('click', () => { const unitId = button.closest('.unit-card').dataset.unitId; showCameraPopup(unitId); }); }); contentContainer.querySelectorAll('.unit-card .view-sensors-button').forEach(button => { button.addEventListener('click', () => { const targetPage = button.dataset.pageTarget; loadPage(targetPage); }); }); contentContainer.querySelectorAll('.unit-card .actuators-button').forEach(button => { button.addEventListener('click', () => { const targetPage = button.dataset.pageTarget; loadPage(targetPage); }); }); contentContainer.querySelectorAll('.unit-control-toggle').forEach(toggle => { toggle.addEventListener('change', (event) => { const unitId = toggle.dataset.unitId; const control = toggle.dataset.control; const isChecked = toggle.checked; toggleUnitControl(unitId, control, isChecked); }); }); contentContainer.querySelectorAll('.unit-card').forEach(card => { card.addEventListener('click', (event) => { if (event.target.closest('button') || event.target.closest('.switch')) return; }); }); }
-        function setupCreateUnitListeners() { /* Mantido */ const form = document.getElementById('create-unit-form'); if (form) form.addEventListener('submit', handleCreateUnit); }
-        function setupAddDeviceListeners() { /* Mantido */ const descriptions = { irrigation: "<h4><i class='fas fa-faucet'></i> Irrigação</h4>...", lighting: "<h4><i class='fas fa-lightbulb'></i> Iluminação</h4>...", ventilation: "<h4><i class='fas fa-wind'></i> Ventilação</h4>...", co2_sensor: "<h4><i class='fas fa-smog'></i> Sensor CO₂</h4>...", ph_sensor: "<h4><i class='fas fa-flask'></i> Sensor pH</h4>...", humidity_sensor: "<h4><i class='fas fa-tint'></i> Sensor Umidade</h4>...", temperature_sensor: "<h4><i class='fas fa-thermometer-half'></i> Sensor Temp.</h4>...", camera: "<h4><i class='fas fa-camera'></i> Câmera</h4>...", }; const list = contentContainer.querySelector('.device-list-box ul'); const descBox = document.getElementById('device-description-content'); if (list && descBox) { list.addEventListener('click', (event) => { const li = event.target.closest('li'); if (!li) return; list.querySelectorAll('li').forEach(i => i.classList.remove('active')); li.classList.add('active'); const type = li.dataset.deviceType; descBox.innerHTML = descriptions[type] || '<p>...</p>'; const btn = descBox.querySelector('button'); if (btn) btn.addEventListener('click', () => alert(`Configurar ${type}...`)); applyThemeToDynamicContent(); }); } }
-        function setupSensorsListeners() { /* Mantido */ }
-        function setupActuatorsListeners() { /* Mantido */ contentContainer.querySelectorAll('.actuator-toggle').forEach(toggle => { toggle.addEventListener('change', (event) => { const id = event.target.id; const checked = event.target.checked; toggleActuator(id, checked); }); }); }
-        function setupSettingsListeners() { /* Mantido */ const lightBtn = contentContainer.querySelector('.light-theme'); const darkBtn = contentContainer.querySelector('.dark-theme'); const sensorsBtn = contentContainer.querySelector('#view-sensors-button'); const actuatorsBtn = contentContainer.querySelector('#view-actuators-button'); const versionBtn = contentContainer.querySelector('#settings-version-button'); if (lightBtn) lightBtn.addEventListener('click', () => setTheme('light')); if (darkBtn) darkBtn.addEventListener('click', () => setTheme('dark')); if (sensorsBtn) sensorsBtn.addEventListener('click', () => loadPage('sensors')); if (actuatorsBtn) actuatorsBtn.addEventListener('click', () => loadPage('actuators')); if (versionBtn) versionBtn.addEventListener('click', showVersionPopup); }
-        function setupAlertsListeners() { /* MODIFICADO para incluir histórico */
-             const createBtn = contentContainer.querySelector('#create-alert-button');
-             const manageBtn = contentContainer.querySelector('#manage-alerts-button');
-             const historyBtn = contentContainer.querySelector('#alert-history-button');
-
-             if (createBtn) createBtn.addEventListener('click', showCreateAlertPopup);
-             if (manageBtn) manageBtn.addEventListener('click', toggleManageAlerts);
-             if (historyBtn) historyBtn.addEventListener('click', toggleAlertHistory); // Chama toggle para histórico
+        function setupDashboardListeners() {
+            /* Mantido */
+            console.log('Executando setupDashboardListeners...');
+            contentContainer.querySelectorAll('.dashboard-box').forEach(box => {
+                box.addEventListener('click', (event) => {
+                    if (event.target.closest('button, a, input, select, textarea, .switch')) return;
+                    const unitId = box.dataset.unitId;
+                    loadPage('units');
+                });
+            });
         }
-        async function setupGraphsListeners() { /* Mantido */ const unitSelect = contentContainer.querySelector('#graph-unit-select'); const sensorSelect = contentContainer.querySelector('#graph-sensor-select'); if (unitSelect) { unitSelect.addEventListener('change', updateChart); unitSelect.innerHTML = '<option value="">Carregando...</option>'; try { const response = await fetch(`${API_BASE_URL}/units`); const units = await response.json(); if (units && units.length > 0) { unitSelect.innerHTML = units.map(u => `<option value="${u.id}">${u.name}</option>`).join(''); if (units.length > 0) { unitSelect.value = units[0].id; updateChart(); } } else { unitSelect.innerHTML = '<option value="">Nenhuma unidade</option>'; } } catch (error) { console.error("Erro unidades gráfico:", error); unitSelect.innerHTML = '<option value="">Erro</option>'; } } if (sensorSelect) { sensorSelect.addEventListener('change', updateChart); } }
+
+        function setupUnitsListeners() {
+            /* Mantido */
+            console.log('Executando setupUnitsListeners...');
+            contentContainer.querySelectorAll('.unit-card .edit-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const unitId = button.closest('.unit-card').dataset.unitId;
+                    showEditUnitPopup(unitId);
+                });
+            });
+            contentContainer.querySelectorAll('.unit-card .camera-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const unitId = button.closest('.unit-card').dataset.unitId;
+                    showCameraPopup(unitId);
+                });
+            });
+            contentContainer.querySelectorAll('.unit-card .view-sensors-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetPage = button.dataset.pageTarget;
+                    loadPage(targetPage);
+                });
+            });
+            contentContainer.querySelectorAll('.unit-card .actuators-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetPage = button.dataset.pageTarget;
+                    loadPage(targetPage);
+                });
+            });
+            contentContainer.querySelectorAll('.unit-control-toggle').forEach(toggle => {
+                toggle.addEventListener('change', (event) => {
+                    const unitId = toggle.dataset.unitId;
+                    const control = toggle.dataset.control;
+                    const isChecked = toggle.checked;
+                    toggleUnitControl(unitId, control, isChecked);
+                });
+            });
+            contentContainer.querySelectorAll('.unit-card').forEach(card => {
+                card.addEventListener('click', (event) => {
+                    if (event.target.closest('button') || event.target.closest('.switch')) return;
+                });
+            });
+        }
+
+        function setupCreateUnitListeners() {
+            /* Mantido */
+            const form = document.getElementById('create-unit-form');
+            if (form) form.addEventListener('submit', handleCreateUnit);
+        }
+
+        function setupAddDeviceListeners() {
+            /* Mantido */
+            const descriptions = {
+                irrigation: "<h4><i class='fas fa-faucet'></i> Irrigação</h4>...",
+                lighting: "<h4><i class='fas fa-lightbulb'></i> Iluminação</h4>...",
+                ventilation: "<h4><i class='fas fa-wind'></i> Ventilação</h4>...",
+                co2_sensor: "<h4><i class='fas fa-smog'></i> Sensor CO₂</h4>...",
+                ph_sensor: "<h4><i class='fas fa-flask'></i> Sensor pH</h4>...",
+                humidity_sensor: "<h4><i class='fas fa-tint'></i> Sensor Umidade</h4>...",
+                temperature_sensor: "<h4><i class='fas fa-thermometer-half'></i> Sensor Temp.</h4>...",
+                camera: "<h4><i class='fas fa-camera'></i> Câmera</h4>...",
+            };
+            const list = contentContainer.querySelector('.device-list-box ul');
+            const descBox = document.getElementById('device-description-content');
+            if (list && descBox) {
+                list.addEventListener('click', (event) => {
+                    const li = event.target.closest('li');
+                    if (!li) return;
+                    list.querySelectorAll('li').forEach(i => i.classList.remove('active'));
+                    li.classList.add('active');
+                    const type = li.dataset.deviceType;
+                    descBox.innerHTML = descriptions[type] || '<p>...</p>';
+                    const btn = descBox.querySelector('button');
+                    if (btn) btn.addEventListener('click', () => alert(`Configurar ${type}...`));
+                    applyThemeToDynamicContent();
+                });
+            }
+        }
+
+        function setupSensorsListeners() {
+            /* Mantido */
+        }
+
+        function setupActuatorsListeners() {
+            /* Mantido */
+            contentContainer.querySelectorAll('.actuator-toggle').forEach(toggle => {
+                toggle.addEventListener('change', (event) => {
+                    const id = event.target.id;
+                    const checked = event.target.checked;
+                    toggleActuator(id, checked);
+                });
+            });
+        }
+
+        function setupSettingsListeners() {
+            /* Mantido */
+            const lightBtn = contentContainer.querySelector('.light-theme');
+            const darkBtn = contentContainer.querySelector('.dark-theme');
+            const sensorsBtn = contentContainer.querySelector('#view-sensors-button');
+            const actuatorsBtn = contentContainer.querySelector('#view-actuators-button');
+            const versionBtn = contentContainer.querySelector('#settings-version-button');
+
+            if (lightBtn) lightBtn.addEventListener('click', () => setTheme('light'));
+            if (darkBtn) darkBtn.addEventListener('click', () => setTheme('dark'));
+            if (sensorsBtn) sensorsBtn.addEventListener('click', () => loadPage('sensors'));
+            if (actuatorsBtn) actuatorsBtn.addEventListener('click', () => loadPage('actuators'));
+            if (versionBtn) versionBtn.addEventListener('click', showVersionPopup);
+        }
+
+        function setupAlertsListeners() {
+            /* MODIFICADO para incluir histórico */
+            const createBtn = contentContainer.querySelector('#create-alert-button');
+            const manageBtn = contentContainer.querySelector('#manage-alerts-button');
+            const historyBtn = contentContainer.querySelector('#alert-history-button');
+            if (createBtn) createBtn.addEventListener('click', showCreateAlertPopup);
+            if (manageBtn) manageBtn.addEventListener('click', toggleManageAlerts);
+            if (historyBtn) historyBtn.addEventListener('click', toggleAlertHistory); // Chama toggle para histórico
+        }
+
+        async function setupGraphsListeners() {
+            /* Mantido */
+            const unitSelect = contentContainer.querySelector('#graph-unit-select');
+            const sensorSelect = contentContainer.querySelector('#graph-sensor-select');
+
+            if (unitSelect) {
+                unitSelect.addEventListener('change', updateChart);
+                unitSelect.innerHTML = '<option value="">Carregando...</option>';
+                try {
+                    const response = await fetch(`${API_BASE_URL}/units`);
+                    const units = await response.json();
+                    if (units && units.length > 0) {
+                        unitSelect.innerHTML = units.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+                        if (units.length > 0) {
+                            unitSelect.value = units[0].id;
+                            updateChart();
+                        }
+                    } else {
+                        unitSelect.innerHTML = '<option value="">Nenhuma unidade</option>';
+                    }
+                } catch (error) {
+                    console.error("Erro unidades gráfico:", error);
+                    unitSelect.innerHTML = '<option value="">Erro</option>';
+                }
+            }
+            if (sensorSelect) {
+                sensorSelect.addEventListener('change', updateChart);
+            }
+        }
 
         // --- Funções de Lógica ---
-        function loadPage(page) { /* Mantido */ console.log(`Carregando página: ${page}`); if (dataPollingIntervalId) { clearInterval(dataPollingIntervalId); dataPollingIntervalId = null; } if (currentChart && page !== 'graphs') { currentChart.destroy(); currentChart = null; } const renderer = pageRenderers[page] || renderNotFound; const setup = pageSetups[page] || (() => {}); Promise.resolve(renderer()).then(({ title, htmlContent }) => { pageTitle.textContent = title; contentContainer.innerHTML = htmlContent; applyThemeToDynamicContent(); setup(); if (page === 'dashboard' || page === 'units') { startDataPolling(); } }).catch(error => { console.error(`Erro página ${page}:`, error); pageTitle.textContent = "Erro"; contentContainer.innerHTML = `<p style="color:red;">Erro ao carregar.</p>`; }); navLinks.forEach(link => link.classList.remove('active')); const activeLink = document.querySelector(`.nav-link[data-page="${page}"]`); if (activeLink) activeLink.classList.add('active'); }
-        function setTheme(theme) { /* Mantido */ const cl = `${theme}-mode`; document.body.className = cl; sidebar.className = `sidebar ${cl}`; mainContent.className = `main-content ${cl}`; localStorage.setItem('theme', theme); applyThemeToDynamicContent(); }
-        function applyThemeToDynamicContent() { /* Mantido */ const theme = localStorage.getItem('theme') || 'light'; const themeClass = `${theme}-mode`; const elements = contentContainer.querySelectorAll('.dashboard-box, .unit-card, .edit-unit-box, .unit-form, .sensor-item, .actuators-page .control-item, .device-list-box, .device-description-box, .settings-page .setting-section, .settings-page .setting-section-title, .alerts-page .alert-page-box, .graphs-page .graph-page-box, .alert-list li, .alert-history-list li, .graph-container, .page-section-title'); elements.forEach(el => { el.classList.remove('light-mode', 'dark-mode'); el.classList.add(themeClass); }); const popups = [versionPopup, cameraPopup, editUnitPopup, createAlertPopup]; popups.forEach(p => { if (p && p.style.display !== 'none') { const pc = p.querySelector('.popup-content'); if (pc) { pc.classList.remove('light-mode', 'dark-mode'); pc.classList.add(themeClass); pc.querySelectorAll('hr, .popup-buttons, .form-select, .form-label').forEach(iel => { iel.classList.remove('light-mode', 'dark-mode'); iel.classList.add(themeClass); }); } } }); if (currentChart) { const isDark = theme === 'dark'; const color = isDark ? '#ccc' : '#666'; const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'; const titleColor = isDark ? '#eee' : '#333'; currentChart.options.scales.x.ticks.color = color; currentChart.options.scales.y.ticks.color = color; currentChart.options.scales.x.grid.color = gridColor; currentChart.options.scales.y.grid.color = gridColor; currentChart.options.plugins.legend.labels.color = titleColor; currentChart.options.plugins.title.color = titleColor; currentChart.update(); } }
-        function loadInitialTheme() { /* Mantido */ const theme = localStorage.getItem('theme') || 'light'; setTheme(theme); }
+        function loadPage(page) {
+            /* Mantido */
+            console.log(`Carregando página: ${page}`);
+            if (dataPollingIntervalId) {
+                clearInterval(dataPollingIntervalId);
+                dataPollingIntervalId = null;
+            }
+            if (currentChart && page !== 'graphs') {
+                currentChart.destroy();
+                currentChart = null;
+            }
+
+            const renderer = pageRenderers[page] || renderNotFound;
+            const setup = pageSetups[page] || (() => {});
+
+            Promise.resolve(renderer()).then(({ title, htmlContent }) => {
+                pageTitle.textContent = title;
+                contentContainer.innerHTML = htmlContent;
+                applyThemeToDynamicContent();
+                setup();
+                if (page === 'dashboard' || page === 'units') {
+                    startDataPolling();
+                }
+            }).catch(error => {
+                console.error(`Erro página ${page}:`, error);
+                pageTitle.textContent = "Erro";
+                contentContainer.innerHTML = `<p style="color:red;">Erro ao carregar.</p>`;
+            });
+
+            navLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`.nav-link[data-page="${page}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        function setTheme(theme) {
+            /* Mantido */
+            const cl = `${theme}-mode`;
+            document.body.className = cl;
+            sidebar.className = `sidebar ${cl}`;
+            mainContent.className = `main-content ${cl}`;
+            localStorage.setItem('theme', theme);
+            applyThemeToDynamicContent();
+        }
+
+        function applyThemeToDynamicContent() {
+            /* Mantido */
+            const theme = localStorage.getItem('theme') || 'light';
+            const themeClass = `${theme}-mode`;
+            const elements = contentContainer.querySelectorAll('.dashboard-box, .unit-card, .edit-unit-box, .unit-form, .sensor-item, .actuators-page .control-item, .device-list-box, .device-description-box, .settings-page .setting-section, .settings-page .setting-section-title, .alerts-page .alert-page-box, .graphs-page .graph-page-box, .alert-list li, .alert-history-list li, .graph-container, .page-section-title');
+            elements.forEach(el => {
+                el.classList.remove('light-mode', 'dark-mode');
+                el.classList.add(themeClass);
+            });
+
+            const popups = [versionPopup, cameraPopup, editUnitPopup, createAlertPopup];
+            popups.forEach(p => {
+                if (p && p.style.display !== 'none') {
+                    const pc = p.querySelector('.popup-content');
+                    if (pc) {
+                        pc.classList.remove('light-mode', 'dark-mode');
+                        pc.classList.add(themeClass);
+                        pc.querySelectorAll('hr, .popup-buttons, .form-select, .form-label').forEach(iel => {
+                            iel.classList.remove('light-mode', 'dark-mode');
+                            iel.classList.add(themeClass);
+                        });
+                    }
+                }
+            });
+
+            if (currentChart) {
+                const isDark = theme === 'dark';
+                const color = isDark ? '#ccc' : '#666';
+                const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                const titleColor = isDark ? '#eee' : '#333';
+                currentChart.options.scales.x.ticks.color = color;
+                currentChart.options.scales.y.ticks.color = color;
+                currentChart.options.scales.x.grid.color = gridColor;
+                currentChart.options.scales.y.grid.color = gridColor;
+                currentChart.options.plugins.legend.labels.color = titleColor;
+                currentChart.options.plugins.title.color = titleColor;
+                currentChart.update();
+            }
+        }
+
+        function loadInitialTheme() {
+            /* Mantido */
+            const theme = localStorage.getItem('theme') || 'light';
+            setTheme(theme);
+        }
 
         // --- POLLING (Mantido) ---
-        function startDataPolling() { /* Mantido */ if (dataPollingIntervalId) clearInterval(dataPollingIntervalId); fetchAndUpdateSensorData(); dataPollingIntervalId = setInterval(fetchAndUpdateSensorData, POLLING_INTERVAL); }
-        async function fetchAndUpdateSensorData() { /* Mantido */ try { const response = await fetch(`${API_BASE_URL}/units/current_readings`); if (!response.ok) return; const readings = await response.json(); updateSensorDisplays(readings); } catch (error) { console.error("Polling error:", error); } }
-        function updateSensorDisplays(readings) { /* Mantido */ for (const unitId in readings) { for (const sensorType in readings[unitId]) { const value = readings[unitId][sensorType]; const span = document.querySelector(`span[data-unit-id="${unitId}"][data-sensor="${sensorType}"]`); if (span) { const formatted = formatSensorValue(sensorType, value); if (span.textContent !== formatted) { span.textContent = formatted; span.classList.add('value-updated'); setTimeout(() => span.classList.remove('value-updated'), 700); } } } } }
-        function formatSensorValue(type, value) { /* Mantido */ if (value == null) return 'N/A'; switch(type) { case 'humidity': case 'lighting': return `${value}%`; case 'temperature': return `${value}°C`; case 'co2': return `${value} ppm`; case 'ph': return `${value.toFixed(1)}`; default: return `${value}`; } }
+        function startDataPolling() {
+            /* Mantido */
+            if (dataPollingIntervalId) clearInterval(dataPollingIntervalId);
+            fetchAndUpdateSensorData();
+            dataPollingIntervalId = setInterval(fetchAndUpdateSensorData, POLLING_INTERVAL);
+        }
+
+        async function fetchAndUpdateSensorData() {
+            /* Mantido */
+            try {
+                const response = await fetch(`${API_BASE_URL}/units/current_readings`);
+                if (!response.ok) return;
+                const readings = await response.json();
+                updateSensorDisplays(readings);
+            } catch (error) {
+                console.error("Polling error:", error);
+            }
+        }
+
+        function updateSensorDisplays(readings) {
+            /* Mantido */
+            for (const unitId in readings) {
+                for (const sensorType in readings[unitId]) {
+                    const value = readings[unitId][sensorType];
+                    const span = document.querySelector(`span[data-unit-id="${unitId}"][data-sensor="${sensorType}"]`);
+                    if (span) {
+                        const formatted = formatSensorValue(sensorType, value);
+                        if (span.textContent !== formatted) {
+                            span.textContent = formatted;
+                            span.classList.add('value-updated');
+                            setTimeout(() => span.classList.remove('value-updated'), 700);
+                        }
+                    }
+                }
+            }
+        }
+
+        function formatSensorValue(type, value) {
+            /* Mantido */
+            if (value == null) return 'N/A';
+            switch (type) {
+                case 'humidity':
+                case 'lighting':
+                    return `${value}%`;
+                case 'temperature':
+                    return `${value}°C`;
+                case 'co2':
+                    return `${value} ppm`;
+                case 'ph':
+                    return `${value.toFixed(1)}`;
+                default:
+                    return `${value}`;
+            }
+        }
 
         // --- Lógica Unidades (Mantida) ---
-        async function handleCreateUnit(event) { /* Mantido */ event.preventDefault(); const name = document.getElementById('unit-name').value; const area = document.getElementById('unit-area').value; const type = document.getElementById('unit-type').value; const level = document.getElementById('lighting-level').value; const sensors = Array.from(document.querySelectorAll('#create-unit-form input[name=sensors]:checked')).map(cb => cb.value); if (!name || !area || !level || sensors.length === 0) { alert("Preencha todos os campos obrigatórios."); return; } const data = { name, area, type, lighting_level: parseInt(level), sensors }; try { const response = await fetch(`${API_BASE_URL}/units`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (!response.ok) throw new Error(`HTTP ${response.status}`); const result = await response.json(); alert(`Unidade "${name}" criada! (ID: ${result.id})`); event.target.reset(); loadPage('units'); } catch (error) { console.error("Erro criar unidade:", error); alert(`Erro: ${error.message}`); } }
-        function showCameraPopup(unitId) { /* Mantido */ const name = document.querySelector(`.unit-card[data-unit-id="${unitId}"] .unit-name`)?.textContent || `Unidade ${unitId}`; cameraPopupTitle.textContent = `Câmera - ${name}`; cameraPopup.style.display = 'flex'; applyThemeToDynamicContent(); }
-        function hideCameraPopup() { /* Mantido */ cameraPopup.style.display = 'none'; }
-        function showEditUnitPopup(unitId) { /* Mantido */ const card = document.querySelector(`.unit-card[data-unit-id="${unitId}"]`); if (!card) { alert("Erro: Unidade não encontrada."); return; } const name = card.dataset.name || ''; const area = card.dataset.area || ''; const type = card.dataset.type || 'Hidroponia'; const ideal = card.dataset.lightingIdeal || ''; let sensors = []; try { sensors = JSON.parse(card.dataset.sensors || '[]'); } catch (e) {} document.getElementById('edit-unit-id').value = unitId; document.getElementById('edit-unit-name').value = name; document.getElementById('edit-unit-area').value = area; document.getElementById('edit-unit-type').value = type; document.getElementById('edit-lighting-level').value = ideal; const container = document.getElementById('sensor-selection-container'); if (container) { container.querySelectorAll('input[type=checkbox]').forEach(cb => { const sName = cb.value; cb.checked = sensors.includes(sName); const qInput = document.getElementById(cb.id.replace('sensor', 'quantidade')); if (qInput) { qInput.style.display = cb.checked ? 'inline-block' : 'none'; qInput.value = cb.checked ? 1 : ''; } cb.removeEventListener('change', handleSensorCheckboxChange); cb.addEventListener('change', handleSensorCheckboxChange); }); } const delBtn = editUnitPopup.querySelector('#delete-unit-button'); if (delBtn) { const newDel = delBtn.cloneNode(true); delBtn.parentNode.replaceChild(newDel, delBtn); newDel.addEventListener('click', () => handleDeleteUnit(unitId)); } editUnitPopup.style.display = 'flex'; applyThemeToDynamicContent(); }
-        function handleSensorCheckboxChange(event) { /* Mantido */ const qId = event.target.id.replace('sensor', 'quantidade'); const qInput = document.getElementById(qId); if (qInput) { qInput.style.display = event.target.checked ? 'inline-block' : 'none'; if (!event.target.checked) qInput.value = ''; else qInput.value = qInput.value || 1; } }
-        async function handleSaveEdit(event) { /* Mantido */ event.preventDefault(); const id = document.getElementById('edit-unit-id').value; const name = document.getElementById('edit-unit-name').value; const area = document.getElementById('edit-unit-area').value; const type = document.getElementById('edit-unit-type').value; const level = document.getElementById('edit-lighting-level').value; const sensors = Array.from(document.querySelectorAll('#sensor-selection-container input:checked')).map(cb => cb.value); if (!id || !name || !area || !level) { alert("Preencha campos obrigatórios."); return; } const data = { name, area, type, lighting_level: parseInt(level), sensors }; try { const response = await fetch(`${API_BASE_URL}/units/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (!response.ok) throw new Error(`HTTP ${response.status}`); alert(`Unidade "${name}" atualizada!`); hideEditUnitPopup(); loadPage('units'); } catch (error) { console.error(`Erro salvar unidade ${id}:`, error); alert(`Erro: ${error.message}`); } }
-        function hideEditUnitPopup() { /* Mantido */ editUnitPopup.style.display = 'none'; }
-        async function handleDeleteUnit(unitId) { /* Mantido */ const name = document.getElementById('edit-unit-name')?.value || `ID ${unitId}`; if (confirm(`Remover "${name}"? Ação irreversível.`)) { try { const response = await fetch(`${API_BASE_URL}/units/${unitId}`, { method: 'DELETE' }); if (!response.ok) throw new Error(`HTTP ${response.status}`); alert(`Unidade "${name}" removida.`); hideEditUnitPopup(); loadPage('units'); } catch (error) { console.error(`Erro remover ${unitId}:`, error); alert(`Erro: ${error.message}`); } } }
+        async function handleCreateUnit(event) {
+            /* Mantido */
+            event.preventDefault();
+            const name = document.getElementById('unit-name').value;
+            const area = document.getElementById('unit-area').value;
+            const type = document.getElementById('unit-type').value;
+            const level = document.getElementById('lighting-level').value;
+            const sensors = Array.from(document.querySelectorAll('#create-unit-form input[name=sensors]:checked')).map(cb => cb.value);
+
+            if (!name || !area || !level || sensors.length === 0) {
+                alert("Preencha todos os campos obrigatórios.");
+                return;
+            }
+
+            const data = { name, area, type, lighting_level: parseInt(level), sensors };
+            try {
+                const response = await fetch(`${API_BASE_URL}/units`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const result = await response.json();
+                alert(`Unidade "${name}" criada! (ID: ${result.id})`);
+                event.target.reset();
+                loadPage('units');
+            } catch (error) {
+                console.error("Erro criar unidade:", error);
+                alert(`Erro: ${error.message}`);
+            }
+        }
+
+        function showCameraPopup(unitId) {
+            /* Mantido */
+            const name = document.querySelector(`.unit-card[data-unit-id="${unitId}"] .unit-name`)?.textContent || `Unidade ${unitId}`;
+            cameraPopupTitle.textContent = `Câmera - ${name}`;
+            cameraPopup.style.display = 'flex';
+            applyThemeToDynamicContent();
+        }
+
+        function hideCameraPopup() {
+            /* Mantido */
+            cameraPopup.style.display = 'none';
+        }
+
+        function showEditUnitPopup(unitId) {
+            /* Mantido */
+            const card = document.querySelector(`.unit-card[data-unit-id="${unitId}"]`);
+            if (!card) {
+                alert("Erro: Unidade não encontrada.");
+                return;
+            }
+            const name = card.dataset.name || '';
+            const area = card.dataset.area || '';
+            const type = card.dataset.type || 'Hidroponia';
+            const ideal = card.dataset.lightingIdeal || '';
+            let sensors = [];
+            try {
+                sensors = JSON.parse(card.dataset.sensors || '[]');
+            } catch (e) {
+            }
+
+            document.getElementById('edit-unit-id').value = unitId;
+            document.getElementById('edit-unit-name').value = name;
+            document.getElementById('edit-unit-area').value = area;
+            document.getElementById('edit-unit-type').value = type;
+            document.getElementById('edit-lighting-level').value = ideal;
+
+            const container = document.getElementById('sensor-selection-container');
+            if (container) {
+                container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+                    const sName = cb.value;
+                    cb.checked = sensors.includes(sName);
+                    const qInput = document.getElementById(cb.id.replace('sensor', 'quantidade'));
+                    if (qInput) {
+                        qInput.style.display = cb.checked ? 'inline-block' : 'none';
+                        qInput.value = cb.checked ? 1 : '';
+                    }
+                    cb.removeEventListener('change', handleSensorCheckboxChange);
+                    cb.addEventListener('change', handleSensorCheckboxChange);
+                });
+            }
+
+            const delBtn = editUnitPopup.querySelector('#delete-unit-button');
+            if (delBtn) {
+                const newDel = delBtn.cloneNode(true);
+                delBtn.parentNode.replaceChild(newDel, delBtn);
+                newDel.addEventListener('click', () => handleDeleteUnit(unitId));
+            }
+
+            editUnitPopup.style.display = 'flex';
+            applyThemeToDynamicContent();
+        }
+
+        function handleSensorCheckboxChange(event) {
+            /* Mantido */
+            const qId = event.target.id.replace('sensor', 'quantidade');
+            const qInput = document.getElementById(qId);
+            if (qInput) {
+                qInput.style.display = event.target.checked ? 'inline-block' : 'none';
+                if (!event.target.checked) qInput.value = '';
+                else qInput.value = qInput.value || 1;
+            }
+        }
+
+        async function handleSaveEdit(event) {
+            /* Mantido */
+            event.preventDefault();
+            const id = document.getElementById('edit-unit-id').value;
+            const name = document.getElementById('edit-unit-name').value;
+            const area = document.getElementById('edit-unit-area').value;
+            const type = document.getElementById('edit-unit-type').value;
+            const level = document.getElementById('edit-lighting-level').value;
+            const sensors = Array.from(document.querySelectorAll('#sensor-selection-container input:checked')).map(cb => cb.value);
+
+            if (!id || !name || !area || !level) {
+                alert("Preencha campos obrigatórios.");
+                return;
+            }
+
+            const data = { name, area, type, lighting_level: parseInt(level), sensors };
+            try {
+                const response = await fetch(`${API_BASE_URL}/units/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                alert(`Unidade "${name}" atualizada!`);
+                hideEditUnitPopup();
+                loadPage('units');
+            } catch (error) {
+                console.error(`Erro salvar unidade ${id}:`, error);
+                alert(`Erro: ${error.message}`);
+            }
+        }
+
+        function hideEditUnitPopup() {
+            /* Mantido */
+            editUnitPopup.style.display = 'none';
+        }
+
+        async function handleDeleteUnit(unitId) {
+            /* Mantido */
+            const name = document.getElementById('edit-unit-name')?.value || `ID ${unitId}`;
+            if (confirm(`Remover "${name}"? Ação irreversível.`)) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/units/${unitId}`, { method: 'DELETE' });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    alert(`Unidade "${name}" removida.`);
+                    hideEditUnitPopup();
+                    loadPage('units');
+                } catch (error) {
+                    console.error(`Erro remover ${unitId}:`, error);
+                    alert(`Erro: ${error.message}`);
+                }
+            }
+        }
 
         // --- Lógica de Alertas (Atualizada) ---
-        function showCreateAlertPopup() { /* Mantido */ console.log("Abrindo popup para criar alerta."); createAlertForm.reset(); createAlertPopup.style.display = 'flex'; applyThemeToDynamicContent(); }
-        function hideCreateAlertPopup() { /* Mantido */ createAlertPopup.style.display = 'none'; }
-        async function handleSaveAlert(event) { /* Mantido (envia is_active: true) */ event.preventDefault(); const name = document.getElementById('alert-name').value; const device = document.getElementById('alert-device').value; const condition = document.getElementById('alert-condition').value; const limit = document.getElementById('alert-limit').value; const actionDevice = document.getElementById('alert-action-device').value; const actionState = document.getElementById('alert-action-state').value; if (!name || !device || !condition || (limit === '' && !['on', 'off'].includes(condition)) ) { alert("Preencha os campos obrigatórios do alerta."); return; } const alertData = { name: name, device: device, condition: condition, limit: limit ? parseFloat(limit) : null, action: actionDevice ? { device: actionDevice, state: actionState } : null, is_active: true }; console.log('Enviando novo Alerta:', alertData); try { const response = await fetch(`${API_BASE_URL}/alerts`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(alertData) }); if (!response.ok) { const errorData = await response.json().catch(() => ({ error: `Erro ${response.status}` })); throw new Error(errorData.error || `Erro ${response.status}`); } const result = await response.json(); console.log('Alerta criado:', result); alert(`Alerta "${name}" criado!`); hideCreateAlertPopup(); if(contentContainer.querySelector('#manage-alerts-container')?.style.display === 'block') { loadAlertList(); } } catch (error) { console.error("Erro ao criar alerta:", error); alert(`Erro ao criar alerta: ${error.message}`); } }
-        function toggleManageAlerts() { /* Mantido */ const container = contentContainer.querySelector('#manage-alerts-container'); if (!container) return; const isVisible = container.style.display === 'block'; const historyContainer = contentContainer.querySelector('#alert-history-container'); if (historyContainer && !isVisible) historyContainer.style.display = 'none'; if (isVisible) { container.style.display = 'none'; } else { container.style.display = 'block'; loadAlertList(); } }
-        async function loadAlertList() { /* Mantido da v2.10 */ const ul = contentContainer.querySelector('#alert-list-ul'); if (!ul) return; ul.innerHTML = '<li>Carregando alertas...</li>'; try { const response = await fetch(`${API_BASE_URL}/alerts`); if (!response.ok) throw new Error(`Erro ${response.status} ao buscar alertas.`); const alerts = await response.json(); if (alerts && alerts.length > 0) { ul.innerHTML = alerts.map(alert => `<li class="${!alert.is_active ? 'alert-inactive' : ''}"><span class="alert-details"><strong>${alert.name}</strong><br><small>(${alert.device} ${alert.condition} ${alert.limit_value ?? ''}) ${!alert.is_active ? '[INATIVO]' : ''}</small></span><div class="alert-actions"><button class="toggle-alert-btn alert-action-button ${alert.is_active ? 'deactivate' : 'activate'}" data-alert-id="${alert.id}" data-active="${alert.is_active}" title="${alert.is_active ? 'Parar' : 'Ativar'}"><i class="fas ${alert.is_active ? 'fa-pause' : 'fa-play'}"></i> ${alert.is_active ? 'Parar' : 'Ativar'}</button><button class="delete-alert-btn" data-alert-id="${alert.id}" title="Remover"><i class="fas fa-trash-alt"></i></button></div></li>`).join(''); ul.querySelectorAll('.toggle-alert-btn').forEach(btn => btn.addEventListener('click', handleToggleAlert)); ul.querySelectorAll('.delete-alert-btn').forEach(btn => btn.addEventListener('click', handleDeleteAlert)); } else { ul.innerHTML = '<li>Nenhum alerta configurado.</li>'; } applyThemeToDynamicContent(); } catch (error) { console.error("Erro ao carregar alertas:", error); ul.innerHTML = `<li><span style="color:red;">Erro ao carregar alertas.</span></li>`; /* Exibe erro */ } }
-        async function handleToggleAlert(event) { /* Mantido da v2.10 */ const button = event.currentTarget; const alertId = button.dataset.alertId; const isActive = button.dataset.active === 'true'; const newActiveState = !isActive; try { const response = await fetch(`${API_BASE_URL}/alerts/${alertId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: newActiveState }) }); if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(errorData.error || `Erro ${response.status}`); } console.log(`Alerta ${alertId} status: ${newActiveState}`); loadAlertList(); } catch (error) { console.error("Erro toggle alerta:", error); alert(`Erro: ${error.message}`); } }
-        async function handleDeleteAlert(event) { /* Mantido da v2.10 */ const button = event.currentTarget; const alertId = button.dataset.alertId; if (!alertId) return; const alertItem = button.closest('li'); const alertName = alertItem?.querySelector('strong')?.textContent || `ID ${alertId}`; if (confirm(`Remover PERMANENTEMENTE o alerta "${alertName}"?`)) { try { const response = await fetch(`${API_BASE_URL}/alerts/${alertId}`, { method: 'DELETE' }); if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(errorData.error || `Erro ${response.status}`); } loadAlertList(); } catch (error) { console.error("Erro deletar alerta:", error); alert(`Erro: ${error.message}`); } } }
+        function showCreateAlertPopup() {
+            /* Mantido */
+            console.log("Abrindo popup para criar alerta.");
+            createAlertForm.reset();
+            createAlertPopup.style.display = 'flex';
+            applyThemeToDynamicContent();
+        }
+
+        function hideCreateAlertPopup() {
+            /* Mantido */
+            createAlertPopup.style.display = 'none';
+        }
+
+        async function handleSaveAlert(event) {
+            /* Mantido (envia is_active: true) */
+            event.preventDefault();
+            const name = document.getElementById('alert-name').value;
+            const device = document.getElementById('alert-device').value;
+            const condition = document.getElementById('alert-condition').value;
+            const limit = document.getElementById('alert-limit').value;
+            const actionDevice = document.getElementById('alert-action-device').value;
+            const actionState = document.getElementById('alert-action-state').value;
+
+            if (!name || !device || !condition || (limit === '' && !['on', 'off'].includes(condition))) {
+                alert("Preencha os campos obrigatórios do alerta.");
+                return;
+            }
+
+            const alertData = {
+                name: name,
+                device: device,
+                condition: condition,
+                limit: limit ? parseFloat(limit) : null,
+                action: actionDevice ? { device: actionDevice, state: actionState } : null,
+                is_active: true
+            };
+            console.log('Enviando novo Alerta:', alertData);
+            try {
+                const response = await fetch(`${API_BASE_URL}/alerts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(alertData)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `Erro ${response.status}` }));
+                    throw new Error(errorData.error || `Erro ${response.status}`);
+                }
+                const result = await response.json();
+                console.log('Alerta criado:', result);
+                alert(`Alerta "${name}" criado!`);
+                hideCreateAlertPopup();
+                if (contentContainer.querySelector('#manage-alerts-container')?.style.display === 'block') {
+                    loadAlertList();
+                }
+            } catch (error) {
+                console.error("Erro ao criar alerta:", error);
+                alert(`Erro ao criar alerta: ${error.message}`);
+            }
+        }
+
+        function toggleManageAlerts() {
+            /* Mantido */
+            const container = contentContainer.querySelector('#manage-alerts-container');
+            if (!container) return;
+            const isVisible = container.style.display === 'block';
+            const historyContainer = contentContainer.querySelector('#alert-history-container');
+            if (historyContainer && !isVisible) historyContainer.style.display = 'none';
+            if (isVisible) {
+                container.style.display = 'none';
+            } else {
+                container.style.display = 'block';
+                loadAlertList();
+            }
+        }
+
+        async function loadAlertList() {
+            /* Mantido da v2.10 */
+            const ul = contentContainer.querySelector('#alert-list-ul');
+            if (!ul) return;
+            ul.innerHTML = '<li>Carregando alertas...</li>';
+            try {
+                const response = await fetch(`${API_BASE_URL}/alerts`);
+                if (!response.ok) throw new Error(`Erro ${response.status} ao buscar alertas.`);
+                const alerts = await response.json();
+                if (alerts && alerts.length > 0) {
+                    ul.innerHTML = alerts.map(alert => `<li class="${!alert.is_active ? 'alert-inactive' : ''}"><span class="alert-details"><strong>${alert.name}</strong><br><small>(${alert.device} ${alert.condition} ${alert.limit_value ?? ''}) ${!alert.is_active ? '[INATIVO]' : ''}</small></span><div class="alert-actions"><button class="toggle-alert-btn alert-action-button ${alert.is_active ? 'deactivate' : 'activate'}" data-alert-id="${alert.id}" data-active="${alert.is_active}" title="${alert.is_active ? 'Parar' : 'Ativar'}"><i class="fas ${alert.is_active ? 'fa-pause' : 'fa-play'}"></i> ${alert.is_active ? 'Parar' : 'Ativar'}</button><button class="delete-alert-btn" data-alert-id="${alert.id}" title="Remover"><i class="fas fa-trash-alt"></i></button></div></li>`).join('');
+                    ul.querySelectorAll('.toggle-alert-btn').forEach(btn => btn.addEventListener('click', handleToggleAlert));
+                    ul.querySelectorAll('.delete-alert-btn').forEach(btn => btn.addEventListener('click', handleDeleteAlert));
+                } else {
+                    ul.innerHTML = '<li>Nenhum alerta configurado.</li>';
+                }
+                applyThemeToDynamicContent();
+            } catch (error) {
+                console.error("Erro ao carregar alertas:", error);
+                ul.innerHTML = `<li><span style="color:red;">Erro ao carregar alertas.</span></li>`;
+                /* Exibe erro */
+            }
+        }
+
+        async function handleToggleAlert(event) {
+            /* Mantido da v2.10 */
+            const button = event.currentTarget;
+            const alertId = button.dataset.alertId;
+            const isActive = button.dataset.active === 'true';
+            const newActiveState = !isActive;
+            try {
+                const response = await fetch(`${API_BASE_URL}/alerts/${alertId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_active: newActiveState })
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Erro ${response.status}`);
+                }
+                console.log(`Alerta ${alertId} status: ${newActiveState}`);
+                loadAlertList();
+            } catch (error) {
+                console.error("Erro toggle alerta:", error);
+                alert(`Erro: ${error.message}`);
+            }
+        }
+
+        async function handleDeleteAlert(event) {
+            /* Mantido da v2.10 */
+            const button = event.currentTarget;
+            const alertId = button.dataset.alertId;
+            if (!alertId) return;
+            const alertItem = button.closest('li');
+            const alertName = alertItem?.querySelector('strong')?.textContent || `ID ${alertId}`;
+            if (confirm(`Remover PERMANENTEMENTE o alerta "${alertName}"?`)) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/alerts/${alertId}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `Erro ${response.status}`);
+                    }
+                    loadAlertList();
+                } catch (error) {
+                    console.error("Erro deletar alerta:", error);
+                    alert(`Erro: ${error.message}`);
+                }
+            }
+        }
 
         // --- Lógica Histórico de Alertas (NOVA) ---
         function toggleAlertHistory() {
@@ -442,9 +2704,12 @@
             // Esconde o gerenciamento se estiver abrindo o histórico
             const manageContainer = contentContainer.querySelector('#manage-alerts-container');
             if (manageContainer && !isVisible) manageContainer.style.display = 'none';
-
-            if (isVisible) { container.style.display = 'none'; }
-            else { container.style.display = 'block'; loadAlertHistory(); } // Carrega o histórico ao mostrar
+            if (isVisible) {
+                container.style.display = 'none';
+            } else {
+                container.style.display = 'block';
+                loadAlertHistory();
+            } // Carrega o histórico ao mostrar
         }
 
         async function loadAlertHistory() {
@@ -457,24 +2722,24 @@
                 if (!response.ok) {
                     // Se a API não existir ainda, mostra uma mensagem clara
                     if (response.status === 404) {
-                         ul.innerHTML = '<li>Funcionalidade de histórico ainda não disponível no servidor.</li>';
-                         return;
+                        ul.innerHTML = '<li>Funcionalidade de histórico ainda não disponível no servidor.</li>';
+                        return;
                     }
                     throw new Error(`Erro ${response.status} ao buscar histórico.`);
                 }
                 const history = await response.json(); // Espera [{id, alert_id, timestamp, triggered_value, action_taken, alert_name?}, ...]
-
                 if (history && history.length > 0) {
                     // Formata a data/hora de forma mais legível
                     const formatDate = (isoString) => {
-                         if (!isoString) return '';
-                         try {
+                        if (!isoString) return '';
+                        try {
                             // Tenta formatar para dd/MM/yyyy HH:mm:ss (ajuste o formato conforme preferir)
                             const date = new Date(isoString);
                             return date.toLocaleString('pt-BR');
-                         } catch { return isoString; /* Retorna original se falhar */ }
+                        } catch {
+                            return isoString; /* Retorna original se falhar */
+                        }
                     };
-
                     ul.innerHTML = history.map(entry => `
                         <li class="alert-history-item">
                             <span>
@@ -496,17 +2761,184 @@
         }
 
         // --- Lógica Gráficos (Mantida) ---
-        async function updateChart() { /* Mantido */ const unitSelect=contentContainer.querySelector('#graph-unit-select');const sensorSelect=contentContainer.querySelector('#graph-sensor-select');const canvas=contentContainer.querySelector('#sensorHistoryChart');if(!unitSelect||!sensorSelect||!canvas)return;const unitId=unitSelect.value;const sensorType=sensorSelect.value;const unitName=unitSelect.options[unitSelect.selectedIndex]?.text||'Unid.';const sensorLabel=sensorSelect.options[sensorSelect.selectedIndex]?.text||sensorType;if(!unitId||!sensorType){if(currentChart){currentChart.destroy();currentChart=null;}const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);return;} try{const response=await fetch(`${API_BASE_URL}/units/${unitId}/readings?sensor=${sensorType}&limit=50`);if(!response.ok)throw new Error(`Erro ${response.status}`);const data=await response.json();if(!data||data.length===0){if(currentChart){currentChart.destroy();currentChart=null;}const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);return;}const labels=data.map(d=>new Date(d.timestamp));const values=data.map(d=>d.value);const chartData={labels:labels,datasets:[{label:`${sensorLabel} (${getSensorUnit(sensorType)})`,data:values,fill:false,borderColor:'#5bc0de',tension:0.1}]};if(currentChart)currentChart.destroy();const ctx=canvas.getContext('2d');const theme=localStorage.getItem('theme')||'light';const isDark=theme==='dark';const color=isDark?'#ccc':'#666';const gridColor=isDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)';const titleColor=isDark?'#eee':'#333';currentChart=new Chart(ctx,{type:'line',data:chartData,options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'time',time:{unit:'minute',tooltipFormat:'Pp',displayFormats:{minute:'HH:mm',hour:'HH:mm'}},title:{display:true,text:'Horário'},ticks:{color:color},grid:{color:gridColor}},y:{title:{display:true,text:`Valor ${sensorLabel}`},ticks:{color:color},grid:{color:gridColor}}},plugins:{legend:{labels:{color:titleColor}},title:{display:true,text:`Histórico ${sensorLabel} - ${unitName}`,color:titleColor}}}});}catch(error){console.error("Erro gráfico:",error);if(currentChart){currentChart.destroy();currentChart=null;}const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);} }
-        function getSensorUnit(type) { /* Mantido */ switch(type){case'humidity':case'lighting':return'%';case'temperature':return'°C';case'co2':return'ppm';case'ph':return'';default:return'';} }
+        async function updateChart() {
+            /* Mantido */
+            const unitSelect = contentContainer.querySelector('#graph-unit-select');
+            const sensorSelect = contentContainer.querySelector('#graph-sensor-select');
+            const canvas = contentContainer.querySelector('#sensorHistoryChart');
+            if (!unitSelect || !sensorSelect || !canvas) return;
+            const unitId = unitSelect.value;
+            const sensorType = sensorSelect.value;
+            const unitName = unitSelect.options[unitSelect.selectedIndex]?.text || 'Unid.';
+            const sensorLabel = sensorSelect.options[sensorSelect.selectedIndex]?.text || sensorType;
+
+            if (!unitId || !sensorType) {
+                if (currentChart) {
+                    currentChart.destroy();
+                    currentChart = null;
+                }
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/units/${unitId}/readings?sensor=${sensorType}&limit=50`);
+                if (!response.ok) throw new Error(`Erro ${response.status}`);
+                const data = await response.json();
+                if (!data || data.length === 0) {
+                    if (currentChart) {
+                        currentChart.destroy();
+                        currentChart = null;
+                    }
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    return;
+                }
+
+                const labels = data.map(d => new Date(d.timestamp));
+                const values = data.map(d => d.value);
+
+                const chartData = {
+                    labels: labels,
+                    datasets: [{
+                        label: `${sensorLabel} (${getSensorUnit(sensorType)})`,
+                        data: values,
+                        fill: false,
+                        borderColor: '#5bc0de',
+                        tension: 0.1
+                    }]
+                };
+
+                if (currentChart) currentChart.destroy();
+                const ctx = canvas.getContext('2d');
+                const theme = localStorage.getItem('theme') || 'light';
+                const isDark = theme === 'dark';
+                const color = isDark ? '#ccc' : '#666';
+                const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                const titleColor = isDark ? '#eee' : '#333';
+
+                currentChart = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'minute',
+                                    tooltipFormat: 'Pp',
+                                    displayFormats: {
+                                        minute: 'HH:mm',
+                                        hour: 'HH:mm'
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Horário'
+                                },
+                                ticks: {
+                                    color: color
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: `Valor ${sensorLabel}`
+                                },
+                                ticks: {
+                                    color: color
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: titleColor
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: `Histórico ${sensorLabel} - ${unitName}`,
+                                color: titleColor
+                            }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Erro gráfico:", error);
+                if (currentChart) {
+                    currentChart.destroy();
+                    currentChart = null;
+                }
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function getSensorUnit(type) {
+            /* Mantido */
+            switch (type) {
+                case 'humidity':
+                case 'lighting':
+                    return '%';
+                case 'temperature':
+                    return '°C';
+                case 'co2':
+                    return 'ppm';
+                case 'ph':
+                    return '';
+                default:
+                    return '';
+            }
+        }
 
         // --- Outras Funções (Mantidas) ---
-        async function toggleUnitControl(id, c, is) { console.log(`Simulado: Unid ${id}, Ctrl ${c}, Estado ${is}`); }
-        async function toggleActuator(id, is) { const el=document.getElementById(`${id}-status`); const txt=(id==='ph_control'||id==='co2_control')?(is?'Ativo':'Inativo'):(is?'Ligado':'Desligado'); console.log(`Simulado: Atuador ${id} -> ${txt}`); if(el)el.textContent=txt; }
-        function showVersionPopup() { /* Mantido */ if (versionPopup && versionInfoElement) { const txt = versionInfoElement.textContent || ''; const num = txt.replace('Versão ', '').trim(); if (popupVersionNumberSpan) popupVersionNumberSpan.textContent = num; versionPopup.style.display = 'flex'; applyThemeToDynamicContent(); } }
-        function hideVersionPopup() { /* Mantido */ if (versionPopup) versionPopup.style.display = 'none'; }
+        async function toggleUnitControl(id, c, is) {
+            console.log(`Simulado: Unid ${id}, Ctrl ${c}, Estado ${is}`);
+        }
+
+        async function toggleActuator(id, is) {
+            const el = document.getElementById(`${id}-status`);
+            const txt = (id === 'ph_control' || id === 'co2_control') ? (is ? 'Ativo' : 'Inativo') : (is ? 'Ligado' : 'Desligado');
+            console.log(`Simulado: Atuador ${id} -> ${txt}`);
+            if (el) el.textContent = txt;
+        }
+
+        function showVersionPopup() {
+            /* Mantido */
+            if (versionPopup && versionInfoElement) {
+                const txt = versionInfoElement.textContent || '';
+                const num = txt.replace('Versão ', '').trim();
+                if (popupVersionNumberSpan) popupVersionNumberSpan.textContent = num;
+                versionPopup.style.display = 'flex';
+                applyThemeToDynamicContent();
+            }
+        }
+
+        function hideVersionPopup() {
+            /* Mantido */
+            if (versionPopup) versionPopup.style.display = 'none';
+        }
 
         // --- Inicialização e Listeners Globais (Mantido) ---
-        navLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); const page = link.dataset.page; if (page) loadPage(page); }); });
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = link.dataset.page;
+                if (page) loadPage(page);
+            });
+        });
+
         if (versionInfoElement) versionInfoElement.addEventListener('click', showVersionPopup);
         if (popupCloseButton) popupCloseButton.addEventListener('click', hideVersionPopup);
         if (cameraPopupCloseButton) cameraPopupCloseButton.addEventListener('click', hideCameraPopup);
@@ -518,10 +2950,23 @@
         if (cancelAlertButton) cancelAlertButton.addEventListener('click', hideCreateAlertPopup);
 
         const allPopups = [versionPopup, cameraPopup, editUnitPopup, createAlertPopup];
-        allPopups.forEach(popup => { if (popup) { popup.addEventListener('click', (e) => { if (e.target === popup) { if (popup === versionPopup) hideVersionPopup(); else if (popup === cameraPopup) hideCameraPopup(); else if (popup === editUnitPopup) hideEditUnitPopup(); else if (popup === createAlertPopup) hideCreateAlertPopup(); } }); } });
+        allPopups.forEach(popup => {
+            if (popup) {
+                popup.addEventListener('click', (e) => {
+                    if (e.target === popup) {
+                        if (popup === versionPopup) hideVersionPopup();
+                        else if (popup === cameraPopup) hideCameraPopup();
+                        else if (popup === editUnitPopup) hideEditUnitPopup();
+                        else if (popup === createAlertPopup) hideCreateAlertPopup();
+                    }
+                });
+            }
+        });
 
-        document.addEventListener('DOMContentLoaded', () => { loadInitialTheme(); loadPage(DEFAULT_PAGE); });
-
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInitialTheme();
+            loadPage(DEFAULT_PAGE);
+        });
     </script>
 </body>
 </html>
